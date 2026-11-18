@@ -6,7 +6,7 @@
 [![Platform](https://img.shields.io/badge/platform-Android-3ddc84.svg)](https://github.com/neurotracee/auto-swipe/releases)
 [![Gitee](https://img.shields.io/badge/Gitee-mirror-c71d23.svg)](https://gitee.com/bio234/auto-swipe)
 
-**中文** | [English](#autoswipe)
+**中文** | [English](#english)
 
 只做一件事的安卓小工具：用无障碍服务按 **2–30 秒的随机间隔**，替你从下往上滑一次；
 配一个可拖动的悬浮球，点一下开始、再点一下立刻停。
@@ -251,21 +251,217 @@ A：不能。这两种系统的无障碍/辅助功能接口不对第三方开放
 
 ---
 
-## AutoSwipe
+## English
 
-An Android utility that does exactly one thing: it performs a swipe-up gesture every
-**2–30 seconds at random**, using the Accessibility Service, so you don't have to keep
-swiping yourself. A draggable floating ball starts and stops it with a single tap.
+**AutoSwipe** does exactly one thing: every **2–30 seconds at random** it performs a swipe-up
+gesture for you through the Accessibility Service, and a draggable floating ball starts and stops
+it with a single tap.
 
-It does **not** read the screen, does **not** simulate taps on buttons, and does **not**
-upload anything. The only network access is the optional update check, which reads a
-public release list on Gitee / GitHub.
+No root, no scripting framework, no companion app — two system switches (accessibility and
+overlay) and it works. Everything runs on the device: it does not read the screen, does not
+simulate taps, and uploads nothing.
 
-- **License**: GNU AGPL-3.0-or-later, with additional terms under Section 7(b):
-  keep the author attribution, display the original project URL in the app,
-  and mark modified builds as modified. See [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md).
-- **Credits**: Advisor — was a junior high school student when this project was created;
-  Developed by **Doubao Work × DeepSeek-V4.1-Flash**.
-- **Original repository**: https://github.com/neurotracee/auto-swipe
-  (mirror: https://gitee.com/bio234/auto-swipe)
-- **Build**: JDK 17 + Android SDK 34 + Gradle; `gradle assembleRelease`.
+![Home screen: status, the two permission cards, and the floating ball on the right](docs/img/home.png)
+
+> The screenshot is the real UI: a live status line (running or not, how many swipes, seconds to
+> the next one), the two permission steps, then a plain description of what it actually does.
+> The dark circle with a white ▶ on the right is the floating ball — **▶ when paused, ❚❚ while running**.
+
+### Who made this
+
+- **Advisor: was a junior high school student when this project was created.** Requirements,
+  interaction design and acceptance testing were all done by them.
+- **Developed by Doubao Work × DeepSeek-V4.1-Flash**, following the advisor's instructions and
+  repeated acceptance rounds.
+- **Main model: DeepSeek-V4.1-Flash** — the model the author normally uses, not a one-off.
+- **License: GNU AGPL-3.0-or-later**, see [LICENSE](LICENSE) and
+  [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md).
+- **Provenance:** the update module (dual channel, four-part version numbers, release-note
+  parsing, in-app download and install) is adapted from the author's other project,
+  [PDF Privacy Masker](https://github.com/neurotracee/pdf-privacy-masker) — same author, same
+  license, not third-party code.
+- **Maintenance:** spare-time project, all code public, forks welcome without asking. See
+  [Maintenance & feedback](#maintenance--feedback).
+
+### Attribution — read this before you fork or ship it
+
+Commercial use **is** allowed: no fee, no application, no approval needed (the author checks the
+project roughly once every month or two, so replies can be slow).
+
+Three requirements are **hard**, declared under AGPL-3.0 Section 7(b) in
+[ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md):
+
+**1. Keep the credits**
+
+```
+Advisor: was a junior high school student when this project was created
+Developed by Doubao Work × DeepSeek-V4.1-Flash
+```
+
+**2. Show the original repository URL in the app**
+
+```
+https://github.com/neurotracee/auto-swipe
+https://gitee.com/bio234/auto-swipe        # mirror, faster inside China
+```
+
+It must be **visible to users** — Settings → About & open source, or the home footer. Burying it
+in `LICENSE` or a source comment far from the UI does not count.
+
+**3. Say so if you changed it**
+
+> This program is based on https://github.com/neurotracee/auto-swipe
+> (mirror: https://gitee.com/bio234/auto-swipe) and has been modified. It is not released by the
+> original author.
+
+AGPL itself also requires: ship the corresponding source when you distribute an APK (Sections
+4–6); offer source to users if you run a modified version as a network service (Section 13); do
+not add stricter terms such as "no commercial use"; and rename your fork, since the name
+"自动翻页" / "AutoSwipe" and the icon are not licensed (Section 7(e)).
+
+### Permissions — three, each revocable at any time
+
+| Permission | What it is for | What it never does |
+| --- | --- | --- |
+| **Accessibility service** | Draws one upward path with `dispatchGesture` | No screen reading, no input-field access, no tapping buttons, no network |
+| **Overlay** (`SYSTEM_ALERT_WINDOW`) | Draws the ball above other apps | No screenshots, no screen recording, no reading other apps' UI |
+| **Network + install packages** | Read a public version number when *you* tap "Check", download an APK after you confirm | No background networking, no uploads |
+
+No storage, location, camera, microphone, contacts or installed-apps permissions.
+
+### How it swipes
+
+- **Timing:** 1.5 s fixed wait after you tap start (time to switch back to the video app), then
+  `Random.nextLong(2000, 30001)` per gap — **2–30 seconds**, both ends included, millisecond
+  precision.
+- **Start/end drift:** each gesture picks a start inside 40%–60% width and 73.5%–80% height, and
+  an end inside 27.5%–34.5% height, with at most 5% width of horizontal difference. The drift is
+  bounded so a swipe always stays a valid upward swipe and never lands on a side rail or the
+  navigation bar.
+- **Shape:** an S-curve of 0.6%–1.6% screen width plus 0.2%–0.7% width of fine wobble, with the
+  direction and strength randomized per gesture; vertical motion is strictly monotonic so it
+  never turns back mid-swipe.
+- **Real speed variation:** the path is split into "startup 30% of distance / 42% of time,
+  body 50% / 36%, finish 20% / 22%" and chained with `willContinue` strokes, so the finger never
+  lifts — one swipe that starts slow, speeds up, then eases out. Total duration 0.38–0.64 s.
+- **Gesture source:** `AccessibilityService.dispatchGesture`, the standard accessibility API; no
+  touch injection, no automated clicking.
+- **Floating ball:** hosted by a separate `BallService` that needs **only** the overlay permission,
+  so it appears even before accessibility is enabled. 58 dp, pure Canvas drawing, ▶ / ❚❚ states,
+  draggable, position remembered. Tapping it without accessibility shows "one more step" and
+  opens the accessibility settings.
+- **Stopping:** tap the ball again / pause in the app / screen off (configurable) / turn the
+  accessibility switch off (loop and ball are both torn down).
+- **Compatibility:** some apps restrict accessibility gestures (secure keyboards, payment pages,
+  some games and "lite" builds). If a screen will not move, that is the target app's limitation.
+
+### Settings (two levels)
+
+The gear opens a full two-level settings screen. Every item works and applies immediately; all of
+them are stored locally in `SharedPreferences`.
+
+| Item | Options / behaviour |
+| --- | --- |
+| **Language** | 中文 / English. Switching re-renders the home screen, settings, About page, update dialogs and toasts — no restart. Defaults to the system language once, then remembers your choice |
+| **Appearance** | System / Light / Dark, with status- and navigation-bar icons flipping accordingly |
+| **Floating ball** | Show / hide. Hiding also stops a running loop, so it never keeps swiping behind your back |
+| **Pause when the screen turns off** | On by default; turn it off to keep swiping with the screen off (costs battery) |
+| **Update check** | Auto (on launch) / Manual — the updater reads this preference directly |
+| **Update source** | Gitee (mainland China) / GitHub (elsewhere), single choice with a blue highlight; if the chosen source fails, the other is tried and the dialog says so |
+| **Version** | Shows the current version; "Check" runs a check right there |
+| **About & open source ›** | Second level: version, purpose, the three credit lines, AGPL-3.0-or-later with the §7(b) additional terms, both repository links (tap to open, or copy if no browser), permission list, third-party components |
+
+### Privacy
+
+No background networking, no analytics SDK, no crash reporting, no cloud model.
+
+- Gestures run entirely on the device; the path is not recorded or uploaded.
+- Settings live in the app's own `SharedPreferences`.
+- The only network traffic is the update check: one request for a public release list on
+  Gitee / GitHub, plus the APK download you explicitly start.
+- Offline, the check is skipped silently — no dialog, no stall, swiping unaffected.
+
+### Update checks (same mechanism as the author's PDF project)
+
+- **Two channels:** Gitee and GitHub. Default follows the environment: Chinese system → Gitee;
+  non-Chinese but UTC+8 → Gitee; only "non-Chinese + outside UTC+8" → GitHub; anything unclear
+  falls back to Gitee. A failing source is replaced by the other one, and the dialog says so.
+- **Update level:** the first line of the release body reads `更新级别：强烈建议` or
+  `更新级别：建议` (absent = recommended). Both are only recommendations — the dialog can always
+  be closed, with at most one "are you sure" step.
+- **In-app install:** the app downloads the APK itself and verifies it (starts with `PK`, size
+  matches, package name is this app, version equals the announced one) before handing it to the
+  system installer. No browser, which avoids Gitee saving `.apk` as `.apk.zip`.
+- **Dialog content:** the summary and per-platform items come from the release body; nothing is
+  hard-coded.
+
+Release bodies are bilingual: a Chinese section, then an English section headed
+`## English · Release Notes`. The app picks the section matching your language and falls back to
+the other one if needed.
+
+### Install
+
+1. Download `AutoSwipe-<version>.apk` from [Releases](https://github.com/neurotracee/auto-swipe/releases).
+2. Allow "unknown sources" when asked; new versions install over the old one — no uninstall needed.
+3. In the app, follow the two steps: accessibility (Android 13+ sideloaded builds need
+   App info → menu → "Allow restricted settings" first) and overlay permission.
+4. Tap "Show ball", then ▶ on the ball; it turns ❚❚ and you can stop with one more tap.
+
+### Build
+
+JDK 17 + Android SDK 34; the Gradle wrapper (8.7) is included.
+
+```bash
+./gradlew assembleRelease     # app/build/outputs/apk/release/app-release.apk
+```
+
+Signing uses the root `keystore.properties` (**not in the repo**); create your own to produce a
+signed build.
+
+Version numbers have four parts, `major.minor.revision.patch`; `versionCode` is derived from it
+(`major*1000000 + minor*10000 + revision*100 + patch`).
+
+### Layout
+
+```
+app/src/main/java/com/neurotracee/autoswipe/
+├── App.kt / AppPrefs.kt / AppState.kt   application, settings, live state
+├── MainActivity.kt                      home screen, permission entry points
+├── SwipeAccessibilityService.kt         random timing, human-like gesture, screen-off pause
+├── BallService.kt / BallController.kt / BallView.kt   floating ball
+├── Updater.kt / UpdateApk.kt / ReleaseDigest.kt       update check, download, release notes
+└── ui/                                  theme, home, two-level settings, update dialogs
+```
+
+### FAQ
+
+**The ball does not react.** Check the home status: without accessibility, tapping it opens the
+accessibility settings — that is expected. With accessibility on, ▶ turns into ❚❚.
+
+**The accessibility switch is greyed out.** Android 13+ sideload protection: App info → menu →
+Allow restricted settings, then come back.
+
+**It will not swipe in some app.** That app restricts accessibility gestures, or its list is not a
+single scrollable container. Nothing this app can bypass.
+
+**Does it phone home?** No analytics SDK; the only network use is the update check, which sends
+one request for a version number.
+
+**iOS or desktop?** No. Those platforms do not expose gesture injection to third-party apps.
+
+### Maintenance & feedback
+
+- **Feedback:** [GitHub Issues](https://github.com/neurotracee/auto-swipe/issues) or
+  [Gitee Issues](https://gitee.com/bio234/auto-swipe/issues) — both are read, Gitee is faster
+  inside China.
+- **Cadence:** spare time, checked roughly once every month or two; fixable issues get fixed,
+  timelines are not promised.
+- **Pull requests:** welcome — one topic per PR, and describe what you changed and how you
+  verified it.
+
+---
+
+## License
+
+GNU AGPL-3.0-or-later with additional terms under Section 7(b).
+See [LICENSE](LICENSE), [ADDITIONAL-TERMS.md](ADDITIONAL-TERMS.md) and [NOTICE.md](NOTICE.md).

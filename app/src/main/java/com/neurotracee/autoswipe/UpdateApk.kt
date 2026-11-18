@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import androidx.core.content.FileProvider
+import com.neurotracee.autoswipe.ui.tr
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -76,7 +77,7 @@ object UpdateApk {
         val apk = try {
             withContext(Dispatchers.IO) { download(ctx, url, version, onProgress) }
         } catch (e: Exception) {
-            val msg = e.message?.takeIf { it.isNotBlank() } ?: "下载没完成"
+            val msg = e.message?.takeIf { it.isNotBlank() } ?: tr("下载没完成", "Download did not finish")
             return Fetched(Outcome.Failed(msg))
         }
         return Fetched(install(ctx, apk), apk)
@@ -85,7 +86,7 @@ object UpdateApk {
     /** 已经下好了（比如上次卡在权限那步），直接再拉一次安装界面 */
     fun retryInstall(ctx: Context, apk: File): Outcome =
         if (apk.exists()) install(ctx, apk)
-        else Outcome.Failed("安装包已经不在了，请重新下载")
+        else Outcome.Failed(tr("安装包已经不在了，请重新下载", "The APK is gone; please download again"))
 
     /**
      * 下载安装包到缓存目录。完成时返回文件；任何一步不对都抛异常，由调用方转成提示。
@@ -97,7 +98,7 @@ object UpdateApk {
         onProgress: (Long, Long) -> Unit
     ): File {
         if (!Updater.allowedDownload(url)) {
-            throw IOException("下载地址不在允许的范围内")
+            throw IOException(tr("下载地址不在允许的范围内", "Download URL is not an allowed address"))
         }
 
         clean(ctx)
@@ -107,7 +108,7 @@ object UpdateApk {
         val conn = open(url)
         try {
             val total = conn.contentLengthLong
-            if (total > MAX_BYTES) throw IOException("安装包比预期大得多，已中止")
+            if (total > MAX_BYTES) throw IOException(tr("安装包比预期大得多，已中止", "The APK is far larger than expected; aborted"))
 
             val main = Handler(Looper.getMainLooper())
             var lastPush = 0L
@@ -121,7 +122,7 @@ object UpdateApk {
                         if (n <= 0) break
                         out.write(buf, 0, n)
                         done += n
-                        if (done > MAX_BYTES) throw IOException("安装包比预期大得多，已中止")
+                        if (done > MAX_BYTES) throw IOException(tr("安装包比预期大得多，已中止", "The APK is far larger than expected; aborted"))
                         val now = System.currentTimeMillis()
                         if (now - lastPush >= PROGRESS_GAP_MS) {
                             lastPush = now
@@ -133,29 +134,29 @@ object UpdateApk {
             if (total > 0) main.post { onProgress(done, total) }
 
             if (total > 0 && done != total) {
-                throw IOException("下载不完整（$done / $total 字节）")
+                throw IOException(tr("下载不完整（$done / $total 字节）", "Incomplete download ($done / $total bytes)"))
             }
             if (done < MIN_BYTES) {
-                throw IOException("下载到的文件太小，可能下到了错误页")
+                throw IOException(tr("下载到的文件太小，可能下到了错误页", "The file is too small; probably an error page"))
             }
             // APK 就是 zip 包，头 2 字节必须是 PK
             val head = ByteArray(4)
             part.inputStream().use { it.read(head) }
             if (!(head[0] == 0x50.toByte() && head[1] == 0x4B.toByte())) {
-                throw IOException("下载到的不是安装包（可能被网络劫持或 CDN 出错）")
+                throw IOException(tr("下载到的不是安装包（可能被网络劫持或 CDN 出错）", "That is not an APK (network tampering or a CDN error)"))
             }
 
             // 认包名和版本，确认这就是本应用的这一版
             val info = packageInfo(ctx, part)
             if (info == null || info.first != ctx.packageName) {
-                throw IOException("下载到的不是本应用的安装包")
+                throw IOException(tr("下载到的不是本应用的安装包", "The downloaded file is not this app's APK"))
             }
             val got = info.second
             if (got.isNotBlank() && version.isNotBlank()) {
                 val a = Updater.ver(got)
                 val b = Updater.ver(version)
                 if (a != null && b != null && Updater.cmp(a, b) != 0) {
-                    throw IOException("下载到的版本是 v$got，不是 v$version")
+                    throw IOException(tr("下载到的版本是 v$got，不是 v$version", "Got v$got, expected v$version"))
                 }
             }
         } finally {
@@ -193,7 +194,7 @@ object UpdateApk {
         val uri: Uri = try {
             FileProvider.getUriForFile(ctx, AUTHORITY, apk)
         } catch (e: Exception) {
-            return Outcome.Failed("没法把安装包交给系统（${e.javaClass.simpleName}）")
+            return Outcome.Failed(tr("没法把安装包交给系统（${e.javaClass.simpleName}）", "Could not hand the APK to the system (${e.javaClass.simpleName})"))
         }
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "application/vnd.android.package-archive")
@@ -204,7 +205,7 @@ object UpdateApk {
             ctx.startActivity(intent)
             Outcome.Started
         } catch (e: Exception) {
-            Outcome.Failed("没能打开安装界面（${e.javaClass.simpleName}）")
+            Outcome.Failed(tr("没能打开安装界面（${e.javaClass.simpleName}）", "Could not open the installer (${e.javaClass.simpleName})"))
         }
     }
 
@@ -248,11 +249,11 @@ object UpdateApk {
                 val loc = conn.getHeaderField("Location")
                 conn.disconnect()
                 if (loc.isNullOrBlank() || hops >= MAX_REDIRECTS) {
-                    throw IOException("下载地址跳转异常")
+                    throw IOException(tr("下载地址跳转异常", "Unexpected redirect on the download URL"))
                 }
                 val next = URL(URL(current), loc).toString()
                 if (!Updater.allowedDownload(next)) {
-                    throw IOException("下载被转到了不允许的地址")
+                    throw IOException(tr("下载被转到了不允许的地址", "The download was redirected to a disallowed address"))
                 }
                 current = next
                 hops++
@@ -260,7 +261,7 @@ object UpdateApk {
             }
             if (code !in 200..299) {
                 conn.disconnect()
-                throw IOException("下载失败（HTTP $code）")
+                throw IOException(tr("下载失败（HTTP $code）", "Download failed (HTTP $code)"))
             }
             return conn
         }

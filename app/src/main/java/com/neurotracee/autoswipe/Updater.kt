@@ -1,5 +1,6 @@
 package com.neurotracee.autoswipe
 
+import com.neurotracee.autoswipe.ui.tr
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -131,7 +132,7 @@ object Updater {
                 continue
             }
             if (got == null) {
-                errors.add(ch.label + ": 没有适用于安卓的安装包")
+                errors.add(ch.label + tr(": 没有适用于安卓的安装包", ": no Android package found"))
                 noAsset = ch
                 continue
             }
@@ -148,7 +149,7 @@ object Updater {
         return Result(
             ok = false,
             current = current,
-            detail = "连不上 Gitee 和 GitHub，可能是网络、代理或安全软件拦住了。" +
+            detail = tr("连不上 Gitee 和 GitHub，可能是网络、代理或安全软件拦住了。", "Cannot reach Gitee or GitHub — network, proxy or a security app may be blocking them.") +
                 (if (detail.isBlank()) "" else "\n$detail")
         )
     }
@@ -284,3 +285,4 @@ internal fun parseReleasesForTest(text: String, current: String): Updater.Result
     return Updater.parse(text, current, Updater.RELEASES_PAGE)
         ?: Updater.Result(false, current, detail = "no apk")
 }
+

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AutoSwipe</string>
+    <string name="service_label">AutoSwipe · swipe gesture</string>
+    <string name="accessibility_desc">Does one thing: every 2–30 seconds at random it swipes up from the lower part of the screen, so you can move on to the next video. It does not read the screen, does not tap buttons, and never goes online; it starts when you tap the floating ball and stops when you tap again.</string>
+</resources>

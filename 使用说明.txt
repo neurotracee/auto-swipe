@@ -84,3 +84,52 @@ https://github.com/neurotracee/auto-swipe
 · 改动过的版本还要注明「本程序基于该地址修改，非原作者发布」。
 · 修改后的源代码也要按 AGPL-3.0 一并开放。
 · 程序名称和图标不在授权范围内，二次发布请换成自己的名字和图标。
+
+AutoSwipe · User guide  v1.0.1.1 (Android)
+================================================
+
+Full guide, changelog and FAQ live in the repository:
+https://github.com/neurotracee/auto-swipe
+(mirror: https://gitee.com/bio234/auto-swipe)
+
+[1. Install]
+Download AutoSwipe-<version>.apk from Releases, allow "unknown sources", and install.
+New versions install over the old one; no uninstall needed.
+
+[2. Enable two switches]
+· Accessibility: Settings → Accessibility → Installed services → "AutoSwipe" → on.
+  Android 13+: sideloaded apps are blocked by default — go to App info → menu →
+  "Allow restricted settings" first, then come back.
+· Overlay: Settings → Apps → Special access → Display over other apps → AutoSwipe → allow.
+  The ball needs only this permission, so it can be shown before accessibility is on.
+
+[3. Start and pause]
+Tap "Show ball" — a dark circle appears. Tap ▶ to start; the icon becomes ❚❚, tap again to stop.
+The first swipe comes 1.5 s after you tap. Drag the ball anywhere; its position is remembered.
+
+[4. Timing]
+Every gap is a random 2–30 seconds. Each swipe picks a slightly different start and end point,
+curves a little, and eases in and out over about 0.38–0.64 s. It stops when you turn the screen
+off (configurable), hide the ball, or switch accessibility off.
+
+[5. Settings]
+Gear icon → two-level settings: language (中文 / English), appearance (system / light / dark),
+floating ball, pause on screen off, update check mode, update source (Gitee / GitHub),
+version + check button, and "About & open source" (credits, AGPL-3.0-or-later, repo links,
+permissions, third-party components).
+
+[6. Known limits]
+Some apps restrict accessibility gestures (secure keyboards, payment pages, some games and lite
+builds). This app does not read the screen and does not tap buttons, so it cannot bypass that.
+It is an assistive tool: do not use it to farm views, likes or engagement.
+
+[7. Credits and license]
+Advisor: was a junior high school student when this project was created
+Developed by Doubao Work × DeepSeek-V4.1-Flash (main model: DeepSeek-V4.1-Flash)
+License: AGPL-3.0-or-later with additional terms under Section 7(b)
+Original: https://github.com/neurotracee/auto-swipe
+Mirror:   https://gitee.com/bio234/auto-swipe
+
+Forks and commercial use are allowed without asking. You must keep the credits above, show the
+original repository URL inside your app, and mark modified builds as modified. If you distribute
+an APK, ship the corresponding source as well. The name and icon are not licensed.
