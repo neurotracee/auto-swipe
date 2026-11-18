@@ -98,13 +98,14 @@ fun AutoUpdateGate() {
 
     if (checking && !skipped && result == null) {
         UpdateShell(
-            title = "正在检查更新",
+            title = tr("正在检查更新", "Checking for updates"),
             accent = BrandBlue,
             busy = true,
             onClose = { skipped = true }
         ) {
             Text(
-                "正在向更新源读一次版本号，不传任何文件。\n网络慢的话可以直接关掉，不影响使用。",
+                tr("正在向更新源读一次版本号，不传任何文件。\n网络慢的话可以直接关掉，不影响使用。",
+                "Reading one version number from the update source; no files are sent.\nIf the network is slow, just close it — nothing breaks."),
                 fontSize = 12.5.sp,
                 lineHeight = 19.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -131,9 +132,9 @@ fun ManualUpdateDialog(onClose: () -> Unit) {
     }
 
     if (loading) {
-        UpdateShell(title = "正在检查更新", accent = BrandBlue, busy = true, onClose = onClose) {
+        UpdateShell(title = tr("正在检查更新", "Checking for updates"), accent = BrandBlue, busy = true, onClose = onClose) {
             Text(
-                "正在读取发布列表，只读版本号，不发送任何本机内容。",
+                tr("正在读取发布列表，只读版本号，不发送任何本机内容。", "Reading the release list — only a version number, nothing from your device."),
                 fontSize = 12.5.sp,
                 lineHeight = 19.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -145,35 +146,36 @@ fun ManualUpdateDialog(onClose: () -> Unit) {
     val r = result
     when {
         r == null -> UpdateShell(
-            title = "检查更新没成功",
+            title = tr("检查更新没成功", "Update check failed"),
             accent = DangerRed,
             onClose = onClose
         ) {
             Text(
-                "没能拿到结果，请检查网络后重试。",
+                tr("没能拿到结果，请检查网络后重试。", "No result. Check your network and try again."),
                 fontSize = 12.5.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         !r.ok -> UpdateShell(
-            title = "连不上下游",
+            title = tr("连不上下游", "Cannot reach the source"),
             accent = DangerRed,
             onClose = onClose
         ) {
             Text(
-                "更新源这次没有回应，可能是网络、代理或安全软件拦住了。\n${r.detail}",
+                tr("更新源这次没有回应，可能是网络、代理或安全软件拦住了。\n${r.detail}",
+                "The source did not respond — network, a proxy or a security app may be blocking it.\n${r.detail}"),
                 fontSize = 12.5.sp,
                 lineHeight = 19.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         !r.hasUpdate -> UpdateShell(
-            title = "已是最新版本 v${r.latest}",
+            title = tr("已是最新版本 v${r.latest}", "Up to date — v${r.latest}"),
             accent = SuccessGreen,
             onClose = onClose
         ) {
             Text(
-                "当前版本 v${r.current}，不需要更新。",
+                tr("当前版本 v${r.current}，不需要更新。", "You are on v${r.current}; no update needed."),
                 fontSize = 12.5.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -209,10 +211,10 @@ private fun UpdateResultDialog(r: Updater.Result, onClose: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         when {
-                            pleading && strong -> "再看一眼，好吗？"
-                            pleading -> "确定先不更新吗？"
-                            strong -> "强烈建议更新到 v" + r.latest
-                            else -> "发现新版本 v" + r.latest
+                            pleading && strong -> tr("再看一眼，好吗？", "One more look?")
+                            pleading -> tr("确定先不更新吗？", "Skip this update?")
+                            strong -> tr("强烈建议更新到 v", "Strongly recommended: v") + r.latest
+                            else -> tr("发现新版本 v", "New version v") + r.latest
                         },
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
@@ -220,7 +222,7 @@ private fun UpdateResultDialog(r: Updater.Result, onClose: () -> Unit) {
                         modifier = Modifier.weight(1f)
                     )
                     TextButton(onClick = tryClose) {
-                        Text(if (pleading) "关闭" else "以后再说", fontSize = 12.5.sp)
+                        Text(if (pleading) tr("关闭", "Close") else tr("以后再说", "Later"), fontSize = 12.5.sp)
                     }
                 }
 
@@ -228,7 +230,7 @@ private fun UpdateResultDialog(r: Updater.Result, onClose: () -> Unit) {
                     Spacer(Modifier.height(6.dp))
                     Surface(shape = RoundedCornerShape(999.dp), color = accent.copy(alpha = 0.12f)) {
                         Text(
-                            if (strong) "强烈建议更新" else "建议更新",
+                            if (strong) tr("强烈建议更新", "Strongly recommended") else tr("建议更新", "Recommended"),
                             Modifier.padding(horizontal = 9.dp, vertical = 3.dp),
                             fontSize = 11.sp,
                             color = accent
@@ -242,20 +244,20 @@ private fun UpdateResultDialog(r: Updater.Result, onClose: () -> Unit) {
                 Text(
                     when {
                         pleading && strong ->
-                            "这个版本修的是一上手就会碰到的问题——旧版里那些反复出错、只能一遍遍重来的地方，" +
-                                "新版已经处理好了。花一分钟换上，往后能省下不少时间。\n\n" +
-                                "当然，换不换还是你说了算：点「我还是要用旧版」就能继续用，下次打开只会再提醒你一次。"
+                            tr("这个版本修的是一上手就会碰到的问题——旧版里那些反复出错、只能一遍遍重来的地方，", "This version fixes things you hit right away — the spots that kept failing in the old build") +
+                                tr("新版已经处理好了。花一分钟换上，往后能省下不少时间。\n\n", " have been sorted out. One minute to install saves you a lot of retries.\n\n") +
+                                tr("当然，换不换还是你说了算：点「我还是要用旧版」就能继续用，下次打开只会再提醒你一次。", "It is still your call: tap “Keep the old version” and nothing changes; you'll be reminded once next time.")
                         pleading ->
-                            "不更新也能照常用，只是新版顺手修了几个小毛病，用起来更稳。\n\n" +
-                                "下次打开还会再提醒一次，到时候想换也来得及。"
+                            tr("不更新也能照常用，只是新版顺手修了几个小毛病，用起来更稳。\n\n", "You can keep using the old build; the new one just smooths a few rough edges.\n\n") +
+                                tr("下次打开还会再提醒一次，到时候想换也来得及。", "You'll be reminded once next launch, so there's still time to switch.")
                         hasDigest ->
-                            "当前是 v" + r.current + "。这一版的关键改动就是下面这几条，完整说明在发布页。"
+                            tr("当前是 v", "You are on v") + r.current + tr("。这一版的关键改动就是下面这几条，完整说明在发布页。", "; these are the key changes — the full notes are on the release page.")
                         strong ->
-                            "当前是 v" + r.current + "。这一版修了一直在影响使用的问题，强烈建议尽快换上——" +
-                                "更新只要一分钟，原来的设置和用法都不变。"
+                            tr("当前是 v", "You are on v") + r.current + tr("。这一版修了一直在影响使用的问题，强烈建议尽快换上——", "; this build fixes problems that were affecting normal use, so updating soon is worth it —") +
+                                tr("更新只要一分钟，原来的设置和用法都不变。", " it takes a minute and your settings stay as they are.")
                         else ->
-                            "当前是 v" + r.current + "。新版修了几个已知问题，用起来更稳——" +
-                                "不更新也能继续用，但新版更省心。"
+                            tr("当前是 v", "You are on v") + r.current + tr("。新版修了几个已知问题，用起来更稳——", "; the new build fixes a few known issues and runs steadier —") +
+                                tr("不更新也能继续用，但新版更省心。", " the old one still works, the new one is just less fuss.")
                     },
                     fontSize = 12.5.sp,
                     lineHeight = 20.sp,
@@ -288,9 +290,9 @@ private fun UpdateResultDialog(r: Updater.Result, onClose: () -> Unit) {
                     TextButton(onClick = if (pleading) onClose else tryClose) {
                         Text(
                             when {
-                                pleading && strong -> "我还是要用旧版"
-                                pleading -> "先这样，下次再说"
-                                else -> "暂不更新"
+                                pleading && strong -> tr("我还是要用旧版", "Keep the old version")
+                                pleading -> tr("先这样，下次再说", "Leave it for now")
+                                else -> tr("暂不更新", "Not now")
                             },
                             fontSize = 13.sp
                         )
@@ -302,7 +304,7 @@ private fun UpdateResultDialog(r: Updater.Result, onClose: () -> Unit) {
                             shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = accent)
                         ) {
-                            Text("好，现在更新", fontSize = 13.sp)
+                            Text(tr("好，现在更新", "Update now"), fontSize = 13.sp)
                         }
                     }
                 }
@@ -347,7 +349,7 @@ private fun UpdateShell(
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = accent)
                     ) {
-                        Text(if (busy) "跳过，先进入" else "知道了", fontSize = 13.sp)
+                        Text(if (busy) tr("跳过，先进入", "Skip and continue") else tr("知道了", "Got it"), fontSize = 13.sp)
                     }
                 }
             }
@@ -363,9 +365,9 @@ private fun UpdateShell(
 private fun SourceNote(r: Updater.Result) {
     if (r.channel.isBlank()) return
     val text = if (r.fallbackFrom.isNotBlank()) {
-        r.fallbackFrom + " 这次没连上，已经自动改用 " + r.channel + " 了。"
+        r.fallbackFrom + tr(" 这次没连上，已经自动改用 ", " did not respond, switched to ") + r.channel + tr(" 了。", ".")
     } else {
-        "本次从 " + r.channel + " 读取。"
+        tr("本次从 ", "Read from ") + r.channel + tr(" 读取。", ".")
     }
     Text(
         text,
@@ -451,11 +453,11 @@ private fun UpdateActionBlock(
     Column(Modifier.fillMaxWidth()) {
         Text(
             when {
-                downloading -> "正在下载 v" + r.latest + "… $percent%（不用离开这个页面，下完直接弹出安装）"
-                needPerm -> "安装包已经下好了，但系统还没允许本应用「安装应用」。点「继续安装」会带你去开那个开关，开完回来再点一次就好。"
-                started -> "已经打开系统安装界面。装完覆盖旧版即可，不用先卸载。"
+                downloading -> tr("正在下载 v", "Downloading v") + r.latest + "… $percent%" + tr("（不用离开这个页面，下完直接弹出安装）", " (stay here; the installer opens when it finishes)")
+                needPerm -> tr("安装包已经下好了，但系统还没允许本应用「安装应用」。点「继续安装」会带你去开那个开关，开完回来再点一次就好。", "The APK is downloaded, but the system has not allowed this app to install packages. “Continue” takes you to that switch; come back and tap it again.")
+                started -> tr("已经打开系统安装界面。装完覆盖旧版即可，不用先卸载。", "The system installer is open. Install over the old version; no need to uninstall first.")
                 error.isNotBlank() -> error
-                else -> "点「立即更新」直接在这里下载并安装，不用经过浏览器，也不用自己去文件夹里找文件。"
+                else -> tr("点「立即更新」直接在这里下载并安装，不用经过浏览器，也不用自己去文件夹里找文件。", "Tap “Update now” to download and install right here — no browser, no hunting for files.")
             },
             fontSize = 11.5.sp,
             lineHeight = 18.sp,
@@ -483,7 +485,7 @@ private fun UpdateActionBlock(
                             UpdateApk.openInstallPermission(ctx)
                             Toast.makeText(
                                 ctx,
-                                "打开开关后回到这里点「继续安装」",
+                                tr("打开开关后回到这里点「继续安装」", "Turn the switch on, then come back and tap “Continue”"),
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -496,26 +498,26 @@ private fun UpdateActionBlock(
             ) {
                 Text(
                     when {
-                        downloading -> "下载中 $percent%"
-                        needPerm -> "继续安装"
-                        apk != null -> "继续安装"
-                        error.isNotBlank() -> "重试"
-                        else -> "立即更新"
+                        downloading -> tr("下载中 $percent%", "Downloading $percent%")
+                        needPerm -> tr("继续安装", "Continue")
+                        apk != null -> tr("继续安装", "Continue")
+                        error.isNotBlank() -> tr("重试", "Retry")
+                        else -> tr("立即更新", "Update now")
                     },
                     fontSize = 12.5.sp
                 )
             }
             TextButton(enabled = !downloading, onClick = onOpenBrowser) {
-                Text("用浏览器下载", fontSize = 12.sp)
+                Text(tr("用浏览器下载", "Browser download"), fontSize = 12.sp)
             }
             TextButton(onClick = onCopyLink) {
-                Text("复制链接", fontSize = 12.sp)
+                Text(tr("复制链接", "Copy link"), fontSize = 12.sp)
             }
         }
 
         if (error.isNotBlank() || started) {
             Text(
-                "如果改用浏览器下载：Gitee 有时会把文件存成「…apk.zip」，把结尾的 .zip 删掉就能正常安装。",
+                tr("如果改用浏览器下载：Gitee 有时会把文件存成「…apk.zip」，把结尾的 .zip 删掉就能正常安装。", "If you use a browser: Gitee sometimes saves the file as “…apk.zip”; delete the trailing .zip and it installs fine."),
                 fontSize = 10.5.sp,
                 lineHeight = 15.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
@@ -598,7 +600,7 @@ private fun UpdateNotesBlock(
         horizontalArrangement = Arrangement.End
     ) {
         TextButton(onClick = onOpenPage) {
-            Text("具体详见发布页 →", fontSize = 11.5.sp)
+            Text(tr("具体详见发布页 →", "Full notes on the release page →"), fontSize = 11.5.sp)
         }
     }
 }
@@ -608,8 +610,8 @@ private fun UpdateNotesBlock(
 private fun PlatformTag(platform: String) {
     val (label, fg, bg) = when (platform) {
         "win" -> Triple("Windows", Color(0xFF2B5BD0), Color(0xFFEEF4FF))
-        "android" -> Triple("安卓", Color(0xFF1A7F45), Color(0xFFEAF7EE))
-        else -> Triple("两端", Color(0xFF6B3FC4), Color(0xFFF3EEFE))
+        "android" -> Triple(tr("安卓", "Android"), Color(0xFF1A7F45), Color(0xFFEAF7EE))
+        else -> Triple(tr("两端", "Both"), Color(0xFF6B3FC4), Color(0xFFF3EEFE))
     }
     Surface(shape = RoundedCornerShape(999.dp), color = bg) {
         Text(
@@ -635,7 +637,7 @@ internal fun openUrlInBrowser(ctx: Context, url: String): Boolean = try {
 private fun copyLink(ctx: Context, url: String) {
     val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
     cm?.setPrimaryClip(ClipData.newPlainText("releases", url))
-    Toast.makeText(ctx, "链接已复制，粘到浏览器里打开", Toast.LENGTH_SHORT).show()
+    Toast.makeText(ctx, tr("链接已复制，粘到浏览器里打开", "Link copied — paste it into a browser"), Toast.LENGTH_SHORT).show()
 }
 
 /** 首页/关于页复用的仓库地址 */

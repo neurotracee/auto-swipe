@@ -37,6 +37,14 @@ object AppPrefs {
     var updateSource by mutableStateOf("auto")
         private set
 
+    /** 界面语言：zh / en。默认跟系统走，切了之后不再跟系统变 */
+    var lang by mutableStateOf("zh")
+        private set
+
+    /** 息屏时自动暂停：默认开 */
+    var pauseOnScreenOff by mutableStateOf(true)
+        private set
+
     /**
      * 「这台机器默认该走 Gitee 吗」——启动时算一次就固定，之后不再变。
      * 只看系统环境：中文系统直接 Gitee；非中文但人在东八区也按国内网络走；
@@ -60,8 +68,21 @@ object AppPrefs {
         ballX = p.getInt("ballX", -1)
         ballY = p.getInt("ballY", -1)
         autoCheck = p.getBoolean("autoCheck", true)
+        pauseOnScreenOff = p.getBoolean("pauseOnScreenOff", true)
+        lang = p.getString("lang", null)?.takeIf { it == "zh" || it == "en" }
+            ?: detectSystemLang(ctx)
         updateSource = p.getString("updateSource", "auto")
             ?.takeIf { it == "gitee" || it == "github" || it == "auto" } ?: "auto"
+    }
+
+    fun updateLang(v: String) {
+        lang = if (v == "en") "en" else "zh"
+        sp?.edit()?.putString("lang", lang)?.apply()
+    }
+
+    fun updatePauseOnScreenOff(v: Boolean) {
+        pauseOnScreenOff = v
+        sp?.edit()?.putBoolean("pauseOnScreenOff", v)?.apply()
     }
 
     fun updateTheme(v: String) {
@@ -100,6 +121,13 @@ object AppPrefs {
         }
 
     /** 只读系统资源里的语言配置（不是进程的 Locale.getDefault），再结合时区 */
+    private fun detectSystemLang(ctx: Context): String = try {
+        val language = ctx.resources.configuration.locales.get(0)?.language?.lowercase().orEmpty()
+        if (language.startsWith("zh")) "zh" else "en"
+    } catch (e: Exception) {
+        "zh"
+    }
+
     private fun detectGiteePreference(ctx: Context): Boolean {
         val language = try {
             ctx.resources.configuration.locales.get(0)?.language?.lowercase().orEmpty()

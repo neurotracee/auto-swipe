@@ -134,7 +134,8 @@ class SwipeAccessibilityService : AccessibilityService() {
         if (screenReceiver != null) return
         val r = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action == Intent.ACTION_SCREEN_OFF) stop()
+                // 设置里可以关掉这一条：关掉之后息屏也继续按节奏滑
+                if (intent?.action == Intent.ACTION_SCREEN_OFF && AppPrefs.pauseOnScreenOff) stop()
             }
         }
         screenReceiver = r

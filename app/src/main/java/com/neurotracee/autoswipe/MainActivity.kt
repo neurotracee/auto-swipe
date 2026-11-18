@@ -50,6 +50,7 @@ import com.neurotracee.autoswipe.ui.BrandBlue
 import com.neurotracee.autoswipe.ui.HomeScreen
 import com.neurotracee.autoswipe.ui.ManualUpdateDialog
 import com.neurotracee.autoswipe.ui.SettingsDialog
+import com.neurotracee.autoswipe.ui.tr
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,7 +112,7 @@ private fun AppRoot() {
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             )
         } catch (e: Exception) {
-            toast("请到系统设置 → 无障碍 中手动开启「自动翻页」")
+            toast(tr("请到系统设置 → 无障碍 中手动开启「自动翻页」", "Please enable “AutoSwipe” in Settings → Accessibility"))
         }
     }
 
@@ -124,7 +125,7 @@ private fun AppRoot() {
                 ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             )
         } catch (e: Exception) {
-            toast("请到系统设置 → 应用 → 特殊权限 → 悬浮窗 中允许本应用")
+            toast(tr("请到系统设置 → 应用 → 特殊权限 → 悬浮窗 中允许本应用", "Please allow this app under Settings → Apps → Special access → Display over other apps"))
         }
     }
 
@@ -132,18 +133,18 @@ private fun AppRoot() {
         if (AppState.ballVisible) {
             BallService.stop(ctx)
             AppPrefs.markBallVisible(false)
-            toast("小球已隐藏")
+            toast(tr("小球已隐藏", "Floating ball hidden"))
             return
         }
         if (!SwipeAccessibilityService.canOverlay(ctx)) {
-            toast("请先授予悬浮窗权限")
+            toast(tr("请先授予悬浮窗权限", "Overlay permission is required"))
             openOverlay()
             return
         }
         if (BallService.start(ctx)) {
-            toast("小球已显示：点 ▶ 开始，再点 ⏸ 暂停")
+            toast(tr("小球已显示：点 ▶ 开始，再点 ⏸ 暂停", "Ball shown: tap ▶ to start, ❚❚ to stop"))
         } else {
-            toast("没能显示小球，请检查悬浮窗权限")
+            toast(tr("没能显示小球，请检查悬浮窗权限", "Could not show the ball; check the overlay permission"))
             openOverlay()
         }
     }
@@ -151,17 +152,17 @@ private fun AppRoot() {
     fun startAuto() {
         val svc = SwipeAccessibilityService.instance
         if (!SwipeAccessibilityService.isEnabled(ctx) || svc == null) {
-            toast("请先开启无障碍服务")
+            toast(tr("请先开启无障碍服务", "Enable the accessibility service first"))
             openAccessibility()
             return
         }
         svc.start()
-        toast("已开始：第一次约 1.5 秒后上滑，之后每 2–30 秒随机一次")
+        toast(tr("已开始：第一次约 1.5 秒后上滑，之后每 2–30 秒随机一次", "Started: first swipe in ~1.5 s, then every 2–30 s at random"))
     }
 
     fun stopAuto() {
         SwipeAccessibilityService.instance?.stop()
-        toast("已暂停")
+        toast(tr("已暂停", "Paused"))
     }
 
     Scaffold(
@@ -184,7 +185,7 @@ private fun AppRoot() {
                             ctx, "https://github.com/neurotracee/auto-swipe"
                         )
                     ) {
-                        toast("没能打开浏览器，请手动访问仓库地址")
+                        toast(tr("没能打开浏览器，请手动访问仓库地址", "Could not open a browser; visit the repository manually"))
                     }
                 }
             )
@@ -199,7 +200,8 @@ private fun AppRoot() {
             onCheckUpdate = {
                 showSettings = false
                 showUpdate = true
-            }
+            },
+            onToggleBall = { toggleBall() }
         )
     }
 
@@ -219,7 +221,7 @@ private fun AppTopBar(onSettings: () -> Unit) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                "自动翻页",
+                tr("自动翻页", "AutoSwipe"),
                 fontSize = 19.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -230,7 +232,7 @@ private fun AppTopBar(onSettings: () -> Unit) {
                 color = BrandBlue.copy(alpha = 0.12f)
             ) {
                 Text(
-                    "2–30 秒随机",
+                    tr("2–30 秒随机", "2–30 s random"),
                     Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
                     fontSize = 10.sp,
                     color = BrandBlue
@@ -240,14 +242,14 @@ private fun AppTopBar(onSettings: () -> Unit) {
             IconButton(onClick = onSettings, modifier = Modifier.size(46.dp)) {
                 Icon(
                     Icons.Filled.Settings,
-                    contentDescription = "设置",
+                    contentDescription = tr("设置", "Settings"),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(22.dp)
                 )
             }
         }
         Text(
-            "无障碍上滑 + 悬浮球，一键开始 / 暂停",
+            tr("无障碍上滑 + 悬浮球，一键开始 / 暂停", "Accessibility swipes + floating ball, one tap to start or pause"),
             fontSize = 11.5.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 2.dp, bottom = 2.dp)

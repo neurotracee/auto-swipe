@@ -90,7 +90,7 @@ class BallService : Service() {
     private fun onBallTap() {
         val svc = SwipeAccessibilityService.instance
         if (svc == null || !SwipeAccessibilityService.isEnabled(this)) {
-            toast("还差一步：请先在系统设置里开启「自动翻页」的无障碍服务")
+            toast(com.neurotracee.autoswipe.ui.tr("还差一步：请先在系统设置里开启「自动翻页」的无障碍服务", "One more step: enable the “AutoSwipe” accessibility service in system settings"))
             openAccessibilitySettings()
             return
         }
@@ -104,7 +104,7 @@ class BallService : Service() {
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             )
         } catch (e: Exception) {
-            toast("请手动到 系统设置 → 无障碍 中开启「自动翻页」")
+            toast(com.neurotracee.autoswipe.ui.tr("请手动到 系统设置 → 无障碍 中开启「自动翻页」", "Please enable “AutoSwipe” in Settings → Accessibility"))
         }
     }
 
@@ -122,3 +122,4 @@ class BallService : Service() {
         runCatching { Toast.makeText(this, text, Toast.LENGTH_LONG).show() }
     }
 }
+
