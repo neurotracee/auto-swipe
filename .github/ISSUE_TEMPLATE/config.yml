@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 使用说明（先看这个）
+    url: https://github.com/neurotracee/auto-swipe/blob/main/使用说明.txt
+    about: 安装、开权限、开始暂停、检查更新都在这里，多数问题看一遍就解决了
+  - name: Gitee 镜像（国内访问更快）
+    url: https://gitee.com/bio234/auto-swipe/issues
+    about: 打不开 GitHub 时可以到 Gitee 提 issue

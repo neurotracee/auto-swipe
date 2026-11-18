@@ -173,10 +173,11 @@ https://gitee.com/bio234/auto-swipe      # mirror / 镜像（国内访问更快�
 [docs/发布指南.md](docs/发布指南.md)。
 
 ```bash
-gradle assembleRelease     # 产物：app/build/outputs/apk/release/app-release.apk
+./gradlew assembleRelease     # 产物：app/build/outputs/apk/release/app-release.apk
 ```
 
-也可以在 Windows 上双击 `打包.bat`。签名配置在根目录 `keystore.properties`
+Windows 上直接用 `gradlew.bat assembleRelease`（或双击同目录的 `打包.bat`）。仓库自带
+Gradle Wrapper，不需要先装 Gradle，第一次运行会自行下载 8.7 发行包。
 （**不在仓库里**，自己打包时自建一份；没签名的产物装不上，但签你自己那份就能日常调试）。
 
 版本号四段：`主.次.修订.补丁`，`versionCode` 由 `versionName` 自动算出，不要手填：

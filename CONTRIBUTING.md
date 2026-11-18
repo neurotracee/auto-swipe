@@ -30,9 +30,11 @@
 需要 **JDK 17 + Android SDK 34 + Gradle 8.x**。
 
 ```bash
-gradle assembleDebug       # 调试包
-gradle assembleRelease     # 发布包：app/build/outputs/apk/release/app-release.apk
+./gradlew assembleDebug       # 调试包
+./gradlew assembleRelease     # 发布包：app/build/outputs/apk/release/app-release.apk
 ```
+
+仓库自带 Gradle Wrapper（8.7），不要求本机预装 Gradle；Windows 用 `gradlew.bat`。
 
 签名用的是根目录 `keystore.properties`（**不在仓库里**，自己打包时自建一份：
 `storeFile` / `storePassword` / `keyAlias` / `keyPassword` 四项）。没有它也能构建，
