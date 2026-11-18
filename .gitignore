@@ -1,0 +1,15 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/app/build
+/captures
+*.jks
+*.keystore
+keystore.properties
+/release/
+*.apk
+*.zip
+维护入口_新会话先看这里.md
