@@ -16,22 +16,35 @@
 
 ## 界面
 
-下面都是真机截图，不是画稿；外壳是为了好看套上去的，屏幕里的东西一个字没改。
+真机截图，不是画稿。外壳是为了好看套上去的，屏幕里的东西一个字没改。
 
-| 首页 | 设置（一级） | 关于与开源信息 |
-| :--: | :--: | :--: |
-| <img src="docs/img/framed/home-zh.png" width="236" alt="首页：状态、两个权限入口、行为说明，右侧是可拖动的小球"> | <img src="docs/img/framed/settings-zh.png" width="236" alt="设置页一级：界面语言、外观、悬浮球、运行状态、更新检查方式"> | <img src="docs/img/framed/about-zh-1.png" width="236" alt="关于与开源信息上半：署名、协议、来源说明"> |
-| <img src="docs/img/framed/about-zh-2.png" width="236" alt="关于页下半：双平台 Star 入口、赞赏码、保存赞赏码、版本号"> | <img src="docs/img/framed/home-en.png" width="236" alt="English 首页"> | <img src="docs/img/framed/settings-en.png" width="236" alt="English 设置页"> |
-
-> 首页顶部一行实时状态（在不在翻、翻了几页、下次还有几秒），下面两步把权限开齐，
-> 再往下写清楚它到底会做什么。右边那个深灰圆形、白色 ▶ 就是悬浮球——
-> **暂停态是 ▶，运行态变成 ❚❚**。
->
-> 设置页是**两级**：一级管语言、外观、悬浮球、息屏暂停、更新检查方式与更新源，底部一行进二级的
-> 「关于与开源信息」；二级放署名、协议、更新源说明、Star 入口和赞赏码。每一项都是真功能，
-> 不是摆设。右上角齿轮进一级，一级里再进二级，跟截图一模一样。
->
-> 界面全双语：切到 English 之后首页、设置、关于、更新弹窗、Toast 一起换，不用重启。
+<br>
+<h3 align="center">一屏就能看明白</h3>
+<p align="center">顶部是实时状态（在不在翻、翻了几页、下次还有几秒），中间两步把权限开齐，下面写清它到底会做什么。</p>
+<p align="center">
+  <img src="docs/img/showcase/show-main-zh.png" width="100%" alt="首页、设置一级、关于与开源信息">
+</p>
+<br>
+<h3 align="center">两个平台，都点得到</h3>
+<p align="center">关于页里 GitHub 和 Gitee 各一枚 Star 按钮，旁边是赞赏码；不花钱也能支持，点一颗 Star 就够。</p>
+<p align="center">
+  <img src="docs/img/showcase/show-star-zh.png" width="46%" alt="关于页：双平台 Star 入口、赞赏码、版本号">
+</p>
+<br>
+<h3 align="center">设置分两级，每一项都真生效</h3>
+<p align="center">一级管语言、外观、悬浮球、息屏暂停、更新检查方式与更新源；最下面一行进二级，放署名、协议、来源说明、Star 和赞赏码。</p>
+<p align="center">
+  <img src="docs/img/showcase/show-two-levels-zh.png" width="100%" alt="设置一级与关于与开源信息">
+</p>
+<br>
+<h3 align="center">中文，也说 English</h3>
+<p align="center">右上角齿轮里切换，首页、设置、关于、更新弹窗和 Toast 一起换，不用重启。</p>
+<p align="center">
+  <img src="docs/img/showcase/show-lang-zh.png" width="100%" alt="同一套界面的中文与英文">
+</p>
+<p align="center">
+  <img src="docs/img/showcase/show-lang-settings.png" width="100%" alt="设置页的中文与英文">
+</p>
 
 ---
 
@@ -307,22 +320,33 @@ simulate taps, and uploads nothing.
 Real device captures, not mockups. The phone body is a decorative frame; nothing inside the screen
 was retouched.
 
-| Home | Settings (level 1) | About & open source |
-| :--: | :--: | :--: |
-| <img src="docs/img/framed/home-en.png" width="236" alt="English home screen"> | <img src="docs/img/framed/settings-en.png" width="236" alt="English settings, level 1"> | <img src="docs/img/framed/about-zh-1.png" width="236" alt="About page, credits and licence"> |
-| <img src="docs/img/framed/about-zh-2.png" width="236" alt="About page: both star links, tip QR, version"> | <img src="docs/img/framed/home-zh.png" width="236" alt="Chinese home screen"> | <img src="docs/img/framed/settings-zh.png" width="236" alt="Chinese settings, level 1"> |
-
-> The top line of the home screen is live status (running or not, swipes done, seconds to the next
-> one), then the two permission steps, then a plain description of what it actually does. The dark
-> circle with a white ▶ on the right is the floating ball — **▶ when paused, ❚❚ while running**.
->
-> Settings has **two levels**: level 1 covers language, appearance, the floating ball, pause-on-screen-off,
-> how updates are checked and which source to use, with one row leading to level 2,
-> "About & open source" — credits, licence, update sources, the star links and the tip QR.
-> Every item is a real setting, not decoration. The gear opens level 1; level 2 sits inside it.
->
-> The whole UI is bilingual: switching to 中文 changes the home screen, settings, about page, update
-> dialog and toasts together, with no restart.
+<br>
+<h3 align="center">Understandable at a glance</h3>
+<p align="center">Live status on top (running or not, swipes done, seconds to the next one), the two permission steps, then a plain description of what it does.</p>
+<p align="center">
+  <img src="docs/img/showcase/show-main-zh.png" width="100%" alt="Home, settings level 1, about page">
+</p>
+<br>
+<h3 align="center">Settings in two levels, every item real</h3>
+<p align="center">Level 1 covers language, appearance, the floating ball, pause-on-screen-off, update checks and sources; the last row opens level 2 with credits, licence, sources, star links and the tip QR.</p>
+<p align="center">
+  <img src="docs/img/showcase/show-two-levels-zh.png" width="100%" alt="Settings level 1 and the about page">
+</p>
+<br>
+<h3 align="center">中文, and English too</h3>
+<p align="center">Switch in the gear menu: home, settings, about, the update dialog and toasts all change together, no restart.</p>
+<p align="center">
+  <img src="docs/img/showcase/show-lang-zh.png" width="100%" alt="The same screen in Chinese and English">
+</p>
+<p align="center">
+  <img src="docs/img/showcase/show-lang-settings.png" width="100%" alt="Settings in Chinese and English">
+</p>
+<br>
+<h3 align="center">Both platforms, one tap away</h3>
+<p align="center">The about page has one star button per repository, with the tip QR next to it — no money needed, a star is enough.</p>
+<p align="center">
+  <img src="docs/img/showcase/show-star-zh.png" width="46%" alt="About page: both star links, tip QR, version">
+</p>
 
 ### Who made this
 
