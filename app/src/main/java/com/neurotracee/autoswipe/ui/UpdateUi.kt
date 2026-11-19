@@ -6,7 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -17,7 +20,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -38,11 +44,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -251,7 +259,7 @@ private fun UpdateResultDialog(r: Updater.Result, onClose: () -> Unit) {
                             tr("不更新也能照常用，只是新版顺手修了几个小毛病，用起来更稳。\n\n", "You can keep using the old build; the new one just smooths a few rough edges.\n\n") +
                                 tr("下次打开还会再提醒一次，到时候想换也来得及。", "You'll be reminded once next launch, so there's still time to switch.")
                         hasDigest ->
-                            tr("当前是 v", "You are on v") + r.current + tr("。这一版的关键改动就是下面这几条，完整说明在发布页。", "; these are the key changes — the full notes are on the release page.")
+                            tr("当前是 v", "You are on v") + r.current + tr("。下面是最近几版的说明，可以左右滑动翻看；完整正文在各自的发布页。", "; the notes for the latest few versions are below — swipe sideways, and each page links to its full release notes.")
                         strong ->
                             tr("当前是 v", "You are on v") + r.current + tr("。这一版修了一直在影响使用的问题，强烈建议尽快换上——", "; this build fixes problems that were affecting normal use, so updating soon is worth it —") +
                                 tr("更新只要一分钟，原来的设置和用法都不变。", " it takes a minute and your settings stay as they are.")
@@ -266,7 +274,7 @@ private fun UpdateResultDialog(r: Updater.Result, onClose: () -> Unit) {
 
                 if (!pleading) {
                     Spacer(Modifier.height(10.dp))
-                    UpdateNotesBlock(r = r, accent = accent, onOpenPage = { openUrlInBrowser(ctx, r.page) })
+                    VersionPager(r = r, accent = accent)
 
                     Spacer(Modifier.height(12.dp))
                     Surface(
@@ -528,17 +536,169 @@ private fun UpdateActionBlock(
 }
 
 /**
- * 更新弹窗里那两段文字：顶上一行 100 字以内的摘要，
- * 下面按平台列出详细条目，末尾一条「具体详见发布页」。
+ * 更新说明区：一条横向分页器，可以在最近几版之间左右滑。
+ *
+ * 第 0 页永远是最新版，也是下载唯一的来源；往后翻到的旧版只用来读说明。
+ * 每页的正文自己可上下滚动（高度封顶），所以再长的发布正文也能读完，
+ * 不会把整个弹窗顶到屏幕外。
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun UpdateNotesBlock(
-    r: Updater.Result,
-    accent: Color,
-    onOpenPage: () -> Unit
-) {
-    val notes = r.digest?.pick(false) ?: return
-    if (notes.brief.isBlank() && notes.items.isEmpty()) return
+private fun VersionPager(r: Updater.Result, accent: Color) {
+    val ctx = LocalContext.current
+    val entries = r.history.ifEmpty {
+        listOf(Updater.Entry(r.latest, r.url, r.page, r.strong, "", r.digest))
+    }
+    val state = rememberPagerState { entries.size }
+    val scope = rememberCoroutineScope()
+    val cur = entries[state.currentPage.coerceIn(0, entries.lastIndex)]
+
+    Column(Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                tr("更新说明", "Release notes"),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                if (entries.size > 1)
+                    tr("共 ${entries.size} 个版本 · 左右滑动查看", "${entries.size} versions · swipe sideways")
+                else tr("", ""),
+                fontSize = 10.5.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+
+        // 版本条：‹ 当前翻到的那一版 ›
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                Modifier.padding(horizontal = 2.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(
+                    enabled = state.currentPage > 0,
+                    onClick = { scope.launch { state.animateScrollToPage(state.currentPage - 1) } }
+                ) { Text("‹", fontSize = 17.sp) }
+
+                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "v" + cur.version,
+                            fontSize = 13.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        if (state.currentPage == 0) {
+                            Spacer(Modifier.width(6.dp))
+                            Surface(shape = RoundedCornerShape(999.dp), color = accent.copy(alpha = 0.12f)) {
+                                Text(
+                                    tr("最新", "Latest"),
+                                    Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+                                    fontSize = 9.5.sp,
+                                    color = accent
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        listOfNotNull(
+                            cur.date.ifBlank { null },
+                            tr("你当前是 v" + r.current, "You are on v" + r.current)
+                        ).joinToString(" · "),
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                TextButton(
+                    enabled = state.currentPage < entries.lastIndex,
+                    onClick = { scope.launch { state.animateScrollToPage(state.currentPage + 1) } }
+                ) { Text("›", fontSize = 17.sp) }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+        HorizontalPager(state = state, modifier = Modifier.fillMaxWidth()) { page ->
+            val e = entries[page]
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 96.dp, max = 250.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                NotesBody(notes = e.digest?.pick(AppPrefs.lang == "en"), accent = accent)
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { openUrlInBrowser(ctx, e.page) }) {
+                        Text(tr("这一版的发布页 →", "This version's release page →"), fontSize = 11.sp)
+                    }
+                }
+            }
+        }
+
+        if (entries.size > 1) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 2.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                entries.indices.forEach { i ->
+                    Box(
+                        Modifier
+                            .padding(horizontal = 2.5.dp)
+                            .size(if (i == state.currentPage) 6.dp else 4.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (i == state.currentPage) accent
+                                else MaterialTheme.colorScheme.outlineVariant
+                            )
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(6.dp))
+        Text(
+            tr(
+                "上面的说明只是供你翻阅，翻到旧版也不会下旧版：下载与安装始终是最新版 v" + r.latest + "。",
+                "These notes are for reading only. Downloading and installing always use the newest build, v" +
+                    r.latest + ", whichever page you are on."
+            ),
+            fontSize = 10.5.sp,
+            lineHeight = 15.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+        )
+    }
+}
+
+/** 单页正文：摘要一句 + 按平台分组的条目 */
+@Composable
+private fun NotesBody(notes: ReleaseDigest.Notes?, accent: Color) {
+    if (notes == null || (notes.brief.isBlank() && notes.items.isEmpty())) {
+        Text(
+            tr(
+                "这一版没有写说明，可以点下面的发布页看正文。",
+                "No notes were written for this build — open its release page below."
+            ),
+            fontSize = 11.5.sp,
+            lineHeight = 18.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        return
+    }
 
     if (notes.brief.isNotBlank()) {
         Surface(
@@ -590,17 +750,6 @@ private fun UpdateNotesBlock(
                     )
                 }
             }
-        }
-    }
-
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = 2.dp),
-        horizontalArrangement = Arrangement.End
-    ) {
-        TextButton(onClick = onOpenPage) {
-            Text(tr("具体详见发布页 →", "Full notes on the release page →"), fontSize = 11.5.sp)
         }
     }
 }

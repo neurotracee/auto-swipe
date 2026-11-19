@@ -38,6 +38,9 @@ object Updater {
     /** 本平台安装包的后缀 */
     private const val ASSET_SUFFIX = ".apk"
 
+    /** 弹窗里最多能往回翻几版：留够「好几个版本没更新」的人看说明 */
+    const val MAX_HISTORY = 6
+
     /**
      * 允许的下载域名：GitHub 的发布资产走 objects./release-assets. 两个 CDN，
      * Gitee 的附件走 gitee.com 自身。白名单外的一律只给发布页。
@@ -62,6 +65,22 @@ object Updater {
         "https://gitee.com/api/v5/repos/$GITEE_REPO/releases?per_page=20", GITEE_PAGE
     )
 
+    /**
+     * 一个可翻阅的版本条目。弹窗里左右滑动就是翻这一串；
+     * 下载与安装始终用第 0 条（最新那版），跟用户翻到哪一页无关。
+     */
+    data class Entry(
+        val version: String,
+        /** 这一版自己的安装包地址；取不到时退回该版的发布页 */
+        val url: String,
+        /** 这一版的发布页，用来点「具体详见发布页」 */
+        val page: String,
+        val strong: Boolean,
+        /** 发布日期（yyyy-mm-dd），读不到就是空串 */
+        val date: String,
+        val digest: ReleaseDigest.Digest?
+    )
+
     data class Result(
         val ok: Boolean,
         val current: String,
@@ -81,7 +100,12 @@ object Updater {
          * 本来该走的是哪个通道，但它连不上、于是换了一个。
          * 空串表示没有发生切换；界面上据实说明一句，用户就不会以为「明明选了 Gitee 怎么用了 GitHub」。
          */
-        val fallbackFrom: String = ""
+        val fallbackFrom: String = "",
+        /**
+         * 最新的若干版（按版本号从高到低，最多 [MAX_HISTORY] 条）。
+         * 第 0 条永远是最新版——下载和安装只认它；其余条目只用来翻阅说明。
+         */
+        val history: List<Entry> = emptyList()
     )
 
     /** 下载地址是否可信：必须 https，域名在白名单内（含其子域） */
@@ -162,15 +186,13 @@ object Updater {
     fun parse(text: String, current: String, pageFallback: String): Result? {
         val cur = ver(current) ?: intArrayOf(0, 0, 0, 0)
         val arr = JSONArray(text)
-        var bestVer: IntArray? = null
-        var bestUrl = ""
-        var bestStrong = false
-        var bestBody = ""
         var tagVer: IntArray? = null
         var tagUrl = ""
         var tagStrong = false
         var tagBody = ""
+        var tagDate = ""
         var anyAsset = false
+        val entries = ArrayList<Entry>()
 
         for (i in 0 until arr.length()) {
             val rel = arr.optJSONObject(i) ?: continue
@@ -179,6 +201,8 @@ object Updater {
                 .let { if (allowedDownload(it)) it else pageFallback }
             val body = rel.optString("body")
             val strong = isStrongUpdate(body)
+            // GitHub 给 published_at，Gitee 给 created_at；都只取到「天」
+            val date = rel.optString("published_at").ifBlank { rel.optString("created_at") }.take(10)
 
             ver(rel.optString("tag_name"))?.let { v ->
                 val old = tagVer
@@ -187,11 +211,16 @@ object Updater {
                     tagUrl = page
                     tagStrong = strong
                     tagBody = body
+                    tagDate = date
                 }
             }
 
             val assets = rel.optJSONArray("assets") ?: continue
             if (assets.length() > 0) anyAsset = true
+
+            // 一条发布里可能有多个安装包，取版本号最高的那个当这一版的下载地址
+            var entryVer: IntArray? = null
+            var entryUrl = page
             for (j in 0 until assets.length()) {
                 val a = assets.optJSONObject(j) ?: continue
                 val name = a.optString("name")
@@ -199,26 +228,48 @@ object Updater {
                 val v = ver(name) ?: continue
                 val raw = a.optString("browser_download_url")
                 val url = if (allowedDownload(raw)) raw else page
-                val old = bestVer
+                val old = entryVer
                 if (old == null || cmp(v, old) > 0) {
-                    bestVer = v
-                    bestUrl = url
-                    bestStrong = strong
-                    bestBody = body
+                    entryVer = v
+                    entryUrl = url
                 }
             }
+            val vv = entryVer ?: continue
+            entries.add(Entry(fmt(vv), entryUrl, page, strong, date, ReleaseDigest.of(body)))
         }
 
-        bestVer?.let { v ->
+        // 按版本号从高到低，同版本只留一条，最多留 MAX_HISTORY 条
+        val sorted = entries
+            .sortedWith { a, b ->
+                val va = ver(a.version) ?: intArrayOf(0, 0, 0, 0)
+                val vb = ver(b.version) ?: intArrayOf(0, 0, 0, 0)
+                -cmp(va, vb)
+            }
+            .distinctBy { it.version }
+            .take(MAX_HISTORY)
+
+        sorted.firstOrNull()?.let { top ->
+            val tv = ver(top.version) ?: intArrayOf(0, 0, 0, 0)
             return Result(
-                true, current, fmt(v), cmp(v, cur) > 0, bestUrl,
-                strong = bestStrong, digest = ReleaseDigest.of(bestBody), page = pageFallback
+                ok = true,
+                current = current,
+                latest = top.version,
+                hasUpdate = cmp(tv, cur) > 0,
+                url = top.url,
+                strong = top.strong,
+                digest = top.digest,
+                page = top.page,
+                history = sorted
             )
         }
+
         if (!anyAsset) tagVer?.let { v ->
+            val one = Entry(fmt(v), tagUrl, pageFallback, tagStrong, tagDate, ReleaseDigest.of(tagBody))
             return Result(
-                true, current, fmt(v), cmp(v, cur) > 0, tagUrl,
-                strong = tagStrong, digest = ReleaseDigest.of(tagBody), page = pageFallback
+                ok = true, current = current, latest = one.version,
+                hasUpdate = cmp(v, cur) > 0,
+                url = one.url, strong = one.strong, digest = one.digest,
+                page = pageFallback, history = listOf(one)
             )
         }
         return null

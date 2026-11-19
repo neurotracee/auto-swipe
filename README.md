@@ -158,6 +158,11 @@ GitHub / Gitee 两个仓库地址（可点开，打不开浏览器就复制链�
   包名是本应用、版本号等于要装的那一版），再交给系统安装器。不走浏览器，
   避开 Gitee 把 `.apk` 存成 `.apk.zip` 的老问题。
 - **弹窗内容**：从发布正文里读「一句话」摘要和分平台条目；写什么就显示什么，不在程序里写死。
+- **多版本翻阅**：弹窗里能左右滑动，一次带回最多 6 个最近版本（至少覆盖最新 4 版），
+  每页都显示该版的版本号、日期、摘要与分平台条目；正文长了就在这一页里上下滚动，不会把弹窗顶出屏幕。
+  顶上有 `‹` `›` 箭头和页码点，滑到头会禁用。
+- **下载永远是最新版**：翻阅只影响你看到哪一页的说明。点「立即更新」时用的始终是第 1 页那版
+  （`history[0]`），不会因为翻到了旧版就去下旧版；弹窗底部也写了一句提示说明这件事。
 
 ### 发布正文怎么写（决定更新弹窗长什么样）
 
@@ -416,6 +421,13 @@ No background networking, no analytics SDK, no crash reporting, no cloud model.
   system installer. No browser, which avoids Gitee saving `.apk` as `.apk.zip`.
 - **Dialog content:** the summary and per-platform items come from the release body; nothing is
   hard-coded.
+- **Browsing past versions:** the dialog is a horizontal pager carrying up to 6 recent releases
+  (always at least the latest 4). Each page shows its own version, date, summary and per-platform
+  items; long notes scroll vertically inside that page instead of pushing the dialog off screen.
+  `‹` `›` arrows and page dots sit on top of the notes.
+- **Download is always the newest:** browsing only changes which notes you read. "Update now"
+  always uses page 1's build (`history[0]`), so flipping back does not download an old APK — a
+  line of small print at the bottom of the dialog says exactly that.
 
 Release bodies are bilingual: a Chinese section, then an English section headed
 `## English · Release Notes`. The app picks the section matching your language and falls back to
