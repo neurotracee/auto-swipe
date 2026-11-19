@@ -49,7 +49,8 @@ fun HomeScreen(
     onToggleBall: () -> Unit,
     onStart: () -> Unit,
     onStop: () -> Unit,
-    onOpenRepo: () -> Unit
+    onOpenRepo: () -> Unit,
+    onOpenGitee: () -> Unit
 ) {
     val running = AppState.running
     val count = AppState.swipeCount
@@ -161,10 +162,17 @@ fun HomeScreen(
             )
             Text("  ·  ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(
-                tr("★ 点个 Star", "★ Star it"),
+                tr("★ GitHub", "★ GitHub"),
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable { onOpenRepo() }
+            )
+            Text("  ·  ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                tr("★ Gitee", "★ Gitee"),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { onOpenGitee() }
             )
         }
         Spacer(Modifier.height(10.dp))

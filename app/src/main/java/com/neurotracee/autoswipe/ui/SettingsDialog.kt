@@ -378,10 +378,10 @@ private fun RootPage(
 @Composable
 private fun AboutPage() {
     val ctx = LocalContext.current
-    val clip = LocalClipboardManager.current
+    val clipboard = LocalClipboardManager.current
 
     fun fail(url: String) {
-        clip.setText(AnnotatedString(url))
+        clipboard.setText(AnnotatedString(url))
         Toast.makeText(
             ctx,
             tr("没能打开浏览器，链接已复制：$url", "Couldn't open a browser; link copied: $url"),
@@ -501,6 +501,7 @@ private fun AboutPage() {
 @Composable
 private fun ThanksBlock() {
     val ctx = LocalContext.current
+    val clipboard = LocalClipboardManager.current
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     var saving by remember { mutableStateOf(false) }
@@ -567,17 +568,39 @@ private fun ThanksBlock() {
                 Spacer(Modifier.height(2.dp))
                 Text(
                     tr(
-                        "不想花钱也没关系，点一颗 Star 就是最好的支持——别人搜得到，我才更有动力维护。",
+                        "不想花钱也没关系，点一颗 Star 就是最好的支持——别人搜得到，我才更有动力维护。" +
+                            "两个仓库任选一个就行：GitHub 是主仓，Gitee 是国内镜像，访问快一些，代码完全一样。",
                         "No money needed — a star is the best support: it helps others find the project, " +
-                            "and it keeps me motivated."
+                            "and it keeps me motivated. Either repository works: GitHub is the main one, " +
+                            "Gitee is the China mirror and loads faster; the code is identical."
                     ),
                     fontSize = 11.sp,
                     lineHeight = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    tr(
+                        "要是两个都用得上，两边各点一颗最省事也最管用：GitHub 和 Gitee 的 Star 各算各的，" +
+                            "谁也替不了谁。国内的人多半只在 Gitee 上搜，海外的人只翻 GitHub——" +
+                            "你在两个平台都留一颗，这工具才更容易被下一个需要它的人找到。",
+                        "If you use both, one star on each is the best help you can give: GitHub and Gitee " +
+                            "count their stars separately, so neither stands in for the other. People in China " +
+                            "mostly search Gitee; people elsewhere only look at GitHub — a star on both is what " +
+                            "makes this easy for the next person who needs it to find."
+                    ),
+                    fontSize = 11.sp,
+                    lineHeight = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     TextButton(onClick = {
                         if (!openUrlInBrowser(ctx, REPO_GITHUB)) {
+                            clipboard.setText(AnnotatedString(REPO_GITHUB))
                             Toast.makeText(
                                 ctx,
                                 tr("没能打开浏览器，链接已复制：$REPO_GITHUB", "No browser; link copied: $REPO_GITHUB"),
@@ -586,6 +609,18 @@ private fun ThanksBlock() {
                         }
                     }) {
                         Text(tr("去 GitHub 点 Star", "Star on GitHub"), fontSize = 12.5.sp)
+                    }
+                    TextButton(onClick = {
+                        if (!openUrlInBrowser(ctx, REPO_GITEE)) {
+                            clipboard.setText(AnnotatedString(REPO_GITEE))
+                            Toast.makeText(
+                                ctx,
+                                tr("没能打开浏览器，链接已复制：$REPO_GITEE", "No browser; link copied: $REPO_GITEE"),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }) {
+                        Text(tr("去 Gitee 点 Star", "Star on Gitee"), fontSize = 12.5.sp)
                     }
                 }
             }
@@ -840,4 +875,5 @@ private fun DividerLine() {
         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
     ) {}
 }
+
 

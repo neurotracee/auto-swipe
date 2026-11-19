@@ -14,10 +14,24 @@
 不用脚本、不用 root、不装框架，两个系统开关（无障碍、悬浮窗）打开就能用。全程本地运行，
 不读取屏幕内容、不模拟点击、不上传任何东西。
 
-![首页：状态、两个权限入口、行为说明，右侧是可拖动的小球](docs/img/home.png)
+## 界面
 
-> 截图就是实际界面：顶部一行实时状态（在不在翻、翻了几页、下次还有几秒），下面两步把权限开齐，
-> 再往下写清楚它到底会做什么。右边那个深灰圆形、白色 ▶ 就是悬浮球——**暂停态是 ▶，运行态变成 ⏸**。
+下面都是真机截图，不是画稿；外壳是为了好看套上去的，屏幕里的东西一个字没改。
+
+| 首页 | 设置（一级） | 关于与开源信息 |
+| :--: | :--: | :--: |
+| <img src="docs/img/framed/home-zh.png" width="236" alt="首页：状态、两个权限入口、行为说明，右侧是可拖动的小球"> | <img src="docs/img/framed/settings-zh.png" width="236" alt="设置页一级：界面语言、外观、悬浮球、运行状态、更新检查方式"> | <img src="docs/img/framed/about-zh-1.png" width="236" alt="关于与开源信息上半：署名、协议、来源说明"> |
+| <img src="docs/img/framed/about-zh-2.png" width="236" alt="关于页下半：双平台 Star 入口、赞赏码、保存赞赏码、版本号"> | <img src="docs/img/framed/home-en.png" width="236" alt="English 首页"> | <img src="docs/img/framed/settings-en.png" width="236" alt="English 设置页"> |
+
+> 首页顶部一行实时状态（在不在翻、翻了几页、下次还有几秒），下面两步把权限开齐，
+> 再往下写清楚它到底会做什么。右边那个深灰圆形、白色 ▶ 就是悬浮球——
+> **暂停态是 ▶，运行态变成 ❚❚**。
+>
+> 设置页是**两级**：一级管语言、外观、悬浮球、息屏暂停、更新检查方式与更新源，底部一行进二级的
+> 「关于与开源信息」；二级放署名、协议、更新源说明、Star 入口和赞赏码。每一项都是真功能，
+> 不是摆设。右上角齿轮进一级，一级里再进二级，跟截图一模一样。
+>
+> 界面全双语：切到 English 之后首页、设置、关于、更新弹窗、Toast 一起换，不用重启。
 
 ---
 
@@ -258,7 +272,7 @@ A：不能。这两种系统的无障碍/辅助功能接口不对第三方开放
 - GitHub：<https://github.com/neurotracee/auto-swipe>
 - Gitee：<https://gitee.com/bio234/auto-swipe>
 
-应用首页底部和「关于与开源信息」里都有「★ 点个 Star」入口，点一下就到。
+应用首页底部和「关于与开源信息」里都有「★ GitHub」「★ Gitee」两个入口，点哪个都到；两个平台都点一颗最管用——Star 各算各的，国内的人多半只在 Gitee 搜，海外的人只翻 GitHub，两边都留一颗，这工具才更容易被下一个需要它的人找到。
 
 **2. 请我喝杯奶茶（完全自愿）**
 
@@ -288,11 +302,27 @@ No root, no scripting framework, no companion app — two system switches (acces
 overlay) and it works. Everything runs on the device: it does not read the screen, does not
 simulate taps, and uploads nothing.
 
-![Home screen: status, the two permission cards, and the floating ball on the right](docs/img/home.png)
+### Screenshots
 
-> The screenshot is the real UI: a live status line (running or not, how many swipes, seconds to
-> the next one), the two permission steps, then a plain description of what it actually does.
-> The dark circle with a white ▶ on the right is the floating ball — **▶ when paused, ❚❚ while running**.
+Real device captures, not mockups. The phone body is a decorative frame; nothing inside the screen
+was retouched.
+
+| Home | Settings (level 1) | About & open source |
+| :--: | :--: | :--: |
+| <img src="docs/img/framed/home-en.png" width="236" alt="English home screen"> | <img src="docs/img/framed/settings-en.png" width="236" alt="English settings, level 1"> | <img src="docs/img/framed/about-zh-1.png" width="236" alt="About page, credits and licence"> |
+| <img src="docs/img/framed/about-zh-2.png" width="236" alt="About page: both star links, tip QR, version"> | <img src="docs/img/framed/home-zh.png" width="236" alt="Chinese home screen"> | <img src="docs/img/framed/settings-zh.png" width="236" alt="Chinese settings, level 1"> |
+
+> The top line of the home screen is live status (running or not, swipes done, seconds to the next
+> one), then the two permission steps, then a plain description of what it actually does. The dark
+> circle with a white ▶ on the right is the floating ball — **▶ when paused, ❚❚ while running**.
+>
+> Settings has **two levels**: level 1 covers language, appearance, the floating ball, pause-on-screen-off,
+> how updates are checked and which source to use, with one row leading to level 2,
+> "About & open source" — credits, licence, update sources, the star links and the tip QR.
+> Every item is a real setting, not decoration. The gear opens level 1; level 2 sits inside it.
+>
+> The whole UI is bilingual: switching to 中文 changes the home screen, settings, about page, update
+> dialog and toasts together, with no restart.
 
 ### Who made this
 
@@ -497,7 +527,10 @@ and is faster there):
 - GitHub: <https://github.com/neurotracee/auto-swipe>
 - Gitee: <https://gitee.com/bio234/auto-swipe>
 
-The home footer and the "About & open source" page both have a "★ Star it" link.
+The home footer and the "About & open source" page both link to each repository; starring both is the
+most useful option — GitHub and Gitee count their stars separately, and people in China mostly
+search Gitee while people elsewhere only look at GitHub, so one on each is what makes this easy for
+the next person to find.
 
 **2. Buy me a milk tea (entirely optional)**
 

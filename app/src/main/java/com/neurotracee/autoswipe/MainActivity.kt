@@ -187,6 +187,14 @@ private fun AppRoot() {
                     ) {
                         toast(tr("没能打开浏览器，请手动访问仓库地址", "Could not open a browser; visit the repository manually"))
                     }
+                },
+                onOpenGitee = {
+                    if (!com.neurotracee.autoswipe.ui.openUrlInBrowser(
+                            ctx, "https://gitee.com/bio234/auto-swipe"
+                        )
+                    ) {
+                        toast(tr("没能打开浏览器，请手动访问仓库地址", "Could not open a browser; visit the repository manually"))
+                    }
                 }
             )
         }
