@@ -1,9 +1,13 @@
 package com.neurotracee.autoswipe.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -32,12 +37,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,7 +59,11 @@ import androidx.compose.ui.window.DialogProperties
 import com.neurotracee.autoswipe.AppPrefs
 import com.neurotracee.autoswipe.AppState
 import com.neurotracee.autoswipe.BuildConfig
+import com.neurotracee.autoswipe.R
 import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 设置：两级页面。
@@ -467,12 +483,165 @@ private fun AboutPage() {
             )
         )
 
+        Spacer(Modifier.height(18.dp))
+        DividerLine()
+        Spacer(Modifier.height(14.dp))
+        ThanksBlock()
+
         Spacer(Modifier.height(16.dp))
         Text(
             tr("版本 v", "Version v") + BuildConfig.VERSION_NAME,
             fontSize = 11.5.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+/** 赞赏码：白底本身是一张图，深浅色都放进同一张圆角白卡里，像一张贴纸 */
+@Composable
+private fun ThanksBlock() {
+    val ctx = LocalContext.current
+    val haptic = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
+    var saving by remember { mutableStateOf(false) }
+
+    fun tip(msg: String) = Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+
+    // 8.0 / 9.0 没有相册写入权限，改用系统「保存到…」选择器，全程零权限
+    val picker = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("image/png")
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        tip(
+            if (ThanksQr.writeTo(ctx, uri)) tr("已保存", "Saved")
+            else tr("保存失败，可以截屏后用微信提取文字", "Couldn't save — try a screenshot instead")
+        )
+    }
+
+    fun saveQr() {
+        if (saving) return
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        if (!ThanksQr.canSaveToGallery()) {
+            picker.launch(ThanksQr.FILE_NAME)
+            return
+        }
+        saving = true
+        scope.launch {
+            val msg = try {
+                val path = withContext(Dispatchers.IO) { ThanksQr.saveToGallery(ctx) }
+                tr("已保存到相册：$path", "Saved to gallery: $path")
+            } catch (e: Exception) {
+                tr("保存失败，可以截屏后用微信提取文字", "Couldn't save — try a screenshot instead")
+            }
+            saving = false
+            tip(msg)
+        }
+    }
+
+    Column(Modifier.fillMaxWidth()) {
+        SettingLabel(tr("如果这个应用帮到了你", "If this app helped you"))
+        Text(
+            tr(
+                "本来就是顺手做的小工具，能派上用场就挺好。",
+                "It began as a small side project, and I'm glad it's useful."
+            ),
+            fontSize = 11.5.sp,
+            lineHeight = 18.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        // ---- 点 Star：不打赏也能帮上忙的那条路 ----
+        Spacer(Modifier.height(10.dp))
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                Text(
+                    tr("给仓库点个 Star", "Star the repository"),
+                    fontSize = 12.5.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    tr(
+                        "不想花钱也没关系，点一颗 Star 就是最好的支持——别人搜得到，我才更有动力维护。",
+                        "No money needed — a star is the best support: it helps others find the project, " +
+                            "and it keeps me motivated."
+                    ),
+                    fontSize = 11.sp,
+                    lineHeight = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = {
+                        if (!openUrlInBrowser(ctx, REPO_GITHUB)) {
+                            Toast.makeText(
+                                ctx,
+                                tr("没能打开浏览器，链接已复制：$REPO_GITHUB", "No browser; link copied: $REPO_GITHUB"),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }) {
+                        Text(tr("去 GitHub 点 Star", "Star on GitHub"), fontSize = 12.5.sp)
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+        Text(
+            tr(
+                "国内用户：愿意的话可以请我喝杯奶茶，完全自愿，不打赏也一样免费、功能不缺。",
+                "In China? You can buy me a milk tea if you feel like it — entirely optional; the app stays " +
+                    "free and fully functional either way."
+            ),
+            fontSize = 11.5.sp,
+            lineHeight = 18.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(8.dp))
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .padding(vertical = 12.dp)
+                .pointerInput(Unit) {
+                    detectTapGestures(onLongPress = { saveQr() })
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(R.drawable.thanks_qr),
+                contentDescription = tr("赞赏码", "Tip QR code"),
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .width(302.dp)
+                    .aspectRatio(1000f / 670f)
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            tr(
+                "微信扫码 · 金额随意 · 长按图片可保存",
+                "Scan in WeChat · any amount · long-press to save"
+            ),
+            fontSize = 10.5.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            TextButton(enabled = !saving, onClick = { saveQr() }) {
+                Text(
+                    if (saving) tr("保存中…", "Saving…") else tr("保存赞赏码", "Save the QR"),
+                    fontSize = 12.sp
+                )
+            }
+        }
     }
 }
 

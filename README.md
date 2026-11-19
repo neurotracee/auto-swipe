@@ -242,6 +242,28 @@ A：不会。没有统计 SDK；联网只有检查更新这一个入口，且只
 **Q：iOS / 电脑上能用吗？**
 A：不能。这两种系统的无障碍/辅助功能接口不对第三方开放手势模拟，本项目只做安卓。
 
+## 如果这个应用帮到了你
+
+本来就是顺手做的小工具，能派上用场就挺好。想支持的话有两条路，**第二条不花钱也一样管用**。
+
+**1. 给仓库点个 Star**
+
+最省事的支持：Star 多了别人才搜得到，我也更有动力继续修。两个仓库任选一个，代码完全一样（Gitee 是国内镜像，快一些）：
+
+- GitHub：<https://github.com/neurotracee/auto-swipe>
+- Gitee：<https://gitee.com/bio234/auto-swipe>
+
+应用首页底部和「关于与开源信息」里都有「★ 点个 Star」入口，点一下就到。
+
+**2. 请我喝杯奶茶（完全自愿）**
+
+不打赏也照样免费、功能不缺，没有任何东西被锁在后面。如果确实想请，微信扫下面这张码，金额随意：
+
+![赞赏码：微信扫码，金额随意](docs/img/thanks_qr.png)
+
+> 微信扫码 · 金额随意 · 长按图片可保存
+> App 内「设置 → 关于与开源信息」最下方也有同一张码，长按即可保存到相册（不申请存储权限）。
+
 ## 维护节奏与反馈
 
 - **反馈**：[GitHub Issues](https://github.com/neurotracee/auto-swipe/issues)、
@@ -448,6 +470,33 @@ single scrollable container. Nothing this app can bypass.
 one request for a version number.
 
 **iOS or desktop?** No. Those platforms do not expose gesture injection to third-party apps.
+
+### If this app helped you
+
+It began as a small side project, and it is enough that it is useful. If you want to support it,
+there are two ways — and **the first one costs nothing**.
+
+**1. Star the repository**
+
+The cheapest support there is: more stars means more people can find the project, and it keeps me
+motivated to fix things. Either repository works, the code is identical (Gitee is the China mirror
+and is faster there):
+
+- GitHub: <https://github.com/neurotracee/auto-swipe>
+- Gitee: <https://gitee.com/bio234/auto-swipe>
+
+The home footer and the "About & open source" page both have a "★ Star it" link.
+
+**2. Buy me a milk tea (entirely optional)**
+
+The app stays free and fully functional either way — nothing is locked behind a payment. If you
+really want to, scan this in WeChat; any amount:
+
+![Tip QR code — scan in WeChat, any amount](docs/img/thanks_qr.png)
+
+> Scan in WeChat · any amount · long-press to save
+> The same code sits at the bottom of Settings → About & open source in the app; long-press it to
+> save to your gallery (no storage permission requested).
 
 ### Maintenance & feedback
 

@@ -159,6 +159,13 @@ fun HomeScreen(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable { onOpenRepo() }
             )
+            Text("  ·  ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                tr("★ 点个 Star", "★ Star it"),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { onOpenRepo() }
+            )
         }
         Spacer(Modifier.height(10.dp))
     }
