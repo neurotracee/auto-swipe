@@ -650,14 +650,25 @@ private fun ThanksBlock() {
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(R.drawable.thanks_qr),
+                painter = painterResource(R.drawable.thanks_qr_only),
                 contentDescription = tr("赞赏码", "Tip QR code"),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .width(302.dp)
-                    .aspectRatio(1000f / 670f)
+                    .aspectRatio(950f / 505f)
             )
         }
+        Spacer(Modifier.height(4.dp))
+        Text(
+            tr(
+                "“如果有帮助，可以请我喝杯奶茶”",
+                "“If it helped, a cup of milk tea is welcome.”"
+            ),
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(6.dp))
         Text(
             tr(

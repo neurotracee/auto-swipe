@@ -256,11 +256,5 @@ private fun AppTopBar(onSettings: () -> Unit) {
                 )
             }
         }
-        Text(
-            tr("无障碍上滑 + 悬浮球，一键开始 / 暂停", "Accessibility swipes + floating ball, one tap to start or pause"),
-            fontSize = 11.5.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 2.dp, bottom = 2.dp)
-        )
     }
 }

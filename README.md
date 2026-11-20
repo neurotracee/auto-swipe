@@ -8,6 +8,12 @@
 
 **中文** | [English](#english)
 
+<p align="center">
+  <img src="docs/img/hero-zh.png" width="100%" alt="AutoSwipe 自动翻页：2–30 秒随机间隔的安卓上滑工具">
+</p>
+
+<p align="center"><sub>安卓端：首页、设置、关于与开源信息</sub></p>
+
 只做一件事的安卓小工具：用无障碍服务按 **2–30 秒的随机间隔**，替你从下往上滑一次；
 配一个可拖动的悬浮球，点一下开始、再点一下立刻停。
 
@@ -20,15 +26,9 @@
 
 <br>
 <h3 align="center">一屏就能看明白</h3>
-<p align="center">顶部是实时状态（在不在翻、翻了几页、下次还有几秒），中间两步把权限开齐，下面写清它到底会做什么。</p>
+<p align="center">上面是状态（在不在翻、翻了几页、下次还有几秒），下面两行把权限开齐，剩下的留白给你自己看。</p>
 <p align="center">
   <img src="docs/img/showcase/show-main-zh.png" width="100%" alt="首页、设置一级、关于与开源信息">
-</p>
-<br>
-<h3 align="center">两个平台，都点得到</h3>
-<p align="center">关于页里 GitHub 和 Gitee 各一枚 Star 按钮，旁边是赞赏码；不花钱也能支持，点一颗 Star 就够。</p>
-<p align="center">
-  <img src="docs/img/showcase/show-star-zh.png" width="46%" alt="关于页：双平台 Star 入口、赞赏码、版本号">
 </p>
 <br>
 <h3 align="center">设置分两级，每一项都真生效</h3>
@@ -44,6 +44,12 @@
 </p>
 <p align="center">
   <img src="docs/img/showcase/show-lang-settings.png" width="100%" alt="设置页的中文与英文">
+</p>
+<br>
+<h3 align="center">两个平台，都点得到</h3>
+<p align="center">关于页里 GitHub 和 Gitee 各一枚 Star 按钮，旁边是赞赏码；不花钱也能支持，点一颗 Star 就够。</p>
+<p align="center">
+  <img src="docs/img/showcase/show-star-zh.png" width="46%" alt="关于页：双平台 Star 入口、赞赏码、版本号">
 </p>
 
 ---
@@ -307,6 +313,12 @@ A：不能。这两种系统的无障碍/辅助功能接口不对第三方开放
 
 ## English
 
+<p align="center">
+  <img src="docs/img/hero-en.png" width="100%" alt="AutoSwipe: tap-free swipe-up with random 2–30 s gaps">
+</p>
+
+<p align="center"><sub>Android: home, settings, about &amp; open source</sub></p>
+
 **AutoSwipe** does exactly one thing: every **2–30 seconds at random** it performs a swipe-up
 gesture for you through the Accessibility Service, and a draggable floating ball starts and stops
 it with a single tap.
@@ -322,18 +334,18 @@ was retouched.
 
 <br>
 <h3 align="center">Understandable at a glance</h3>
-<p align="center">Live status on top (running or not, swipes done, seconds to the next one), the two permission steps, then a plain description of what it does.</p>
+<p align="center">Status on top (running or not, swipes done, seconds to the next one), two rows to switch the permissions on, and a lot of quiet space in between.</p>
 <p align="center">
-  <img src="docs/img/showcase/show-main-zh.png" width="100%" alt="Home, settings level 1, about page">
+  <img src="docs/img/showcase/show-main-en.png" width="100%" alt="English home, settings and about page">
 </p>
 <br>
 <h3 align="center">Settings in two levels, every item real</h3>
 <p align="center">Level 1 covers language, appearance, the floating ball, pause-on-screen-off, update checks and sources; the last row opens level 2 with credits, licence, sources, star links and the tip QR.</p>
 <p align="center">
-  <img src="docs/img/showcase/show-two-levels-zh.png" width="100%" alt="Settings level 1 and the about page">
+  <img src="docs/img/showcase/show-two-levels-en.png" width="100%" alt="English settings level 1 and the about page">
 </p>
 <br>
-<h3 align="center">中文, and English too</h3>
+<h3 align="center">English, and 中文 too</h3>
 <p align="center">Switch in the gear menu: home, settings, about, the update dialog and toasts all change together, no restart.</p>
 <p align="center">
   <img src="docs/img/showcase/show-lang-zh.png" width="100%" alt="The same screen in Chinese and English">
@@ -345,7 +357,7 @@ was retouched.
 <h3 align="center">Both platforms, one tap away</h3>
 <p align="center">The about page has one star button per repository, with the tip QR next to it — no money needed, a star is enough.</p>
 <p align="center">
-  <img src="docs/img/showcase/show-star-zh.png" width="46%" alt="About page: both star links, tip QR, version">
+  <img src="docs/img/showcase/show-star-en.png" width="46%" alt="English about page: both star links, tip QR, version">
 </p>
 
 ### Who made this

@@ -17,28 +17,31 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Canvas
 import com.neurotracee.autoswipe.AppState
 import com.neurotracee.autoswipe.BuildConfig
-import com.neurotracee.autoswipe.SwipeAccessibilityService
 
 /**
- * 首页：一眼看到「现在在不在翻」，下面两步把权限开齐，再往下是它到底会做什么。
- * 状态全部来自 [AppState]，服务那边一改，这里立刻重组。
- *
- * 文案都走 [tr]，所以设置里切成 English 后这一页会立刻跟着换，不用重启。
+ * 首页：一张渐变主卡说明「现在在不在翻」，下面两行权限，最后一行三枚小标签。
+ * 图形用 Canvas 现画，不塞文字。
  */
 @Composable
 fun HomeScreen(
@@ -52,318 +55,336 @@ fun HomeScreen(
     onOpenRepo: () -> Unit,
     onOpenGitee: () -> Unit
 ) {
-    val running = AppState.running
-    val count = AppState.swipeCount
-    val left = AppState.leftSeconds
-    val lastGap = AppState.lastGapSeconds
-
     Column(
         Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 18.dp)
     ) {
-        StatusCard(
-            running = running,
+        Spacer(Modifier.height(10.dp))
+
+        HeroCard(
+            running = AppState.running,
             accessibilityOn = accessibilityOn,
-            count = count,
-            left = left,
-            lastGap = lastGap,
+            count = AppState.swipeCount,
+            left = AppState.leftSeconds,
             ballVisible = AppState.ballVisible,
             onStart = onStart,
             onStop = onStop,
             onToggleBall = onToggleBall
         )
 
-        Spacer(Modifier.height(14.dp))
-        SectionLabel(tr("开两个开关就能用", "Two switches and you're set"))
-
-        Spacer(Modifier.height(8.dp))
-        StepCard(
-            index = "1",
-            title = tr("无障碍服务", "Accessibility service"),
-            desc = tr(
-                "唯一能代替手指上滑的开关。只画一条向上的滑动路径，不读屏幕内容、不点按钮。\n" +
-                    "如果这个开关是灰的、点不动：先到「应用信息 → 右上角菜单 → 允许受限设置」，再回来开启。",
-                "The only switch that can swipe for your finger. It draws one upward path — no screen reading, " +
-                    "no button taps.\nIf the switch is grey and won't move: go to App info → menu → “Allow restricted " +
-                    "settings”, then come back."
-            ),
+        Spacer(Modifier.height(24.dp))
+        PermissionRow(
+            glyph = Glyph.Swipe,
+            title = tr("无障碍服务", "Accessibility"),
+            hint = tr("代替手指上滑", "Swipes for your finger"),
             done = accessibilityOn,
-            actionLabel = if (accessibilityOn) tr("去系统设置查看", "Open settings") else tr("去开启", "Enable"),
-            onAction = onOpenAccessibility
+            onOpen = onOpenAccessibility
         )
-
         Spacer(Modifier.height(10.dp))
-        StepCard(
-            index = "2",
-            title = tr("悬浮窗权限", "Overlay permission"),
-            desc = tr(
-                "小球要浮在视频上层才点得到。它只显示一个圆点，不截屏、不录屏。",
-                "The ball has to float above the video app to be tappable. It draws one dot — no screenshots, " +
-                    "no recording."
-            ),
+        PermissionRow(
+            glyph = Glyph.Ball,
+            title = tr("悬浮窗权限", "Overlay"),
+            hint = tr("让小球浮在最上层", "Puts the ball on top"),
             done = overlayOn,
-            actionLabel = if (overlayOn) tr("去系统设置查看", "Open settings") else tr("去授权", "Grant"),
-            onAction = onOpenOverlay
+            onOpen = onOpenOverlay
         )
 
-        Spacer(Modifier.height(16.dp))
-        SectionLabel(tr("它到底会做什么", "What it actually does"))
+        Spacer(Modifier.height(24.dp))
+        Text(
+            tr(
+                "2–30 秒随机 · 拟人轨迹 · 全程离线",
+                "2–30 s random · human-like path · fully offline"
+            ),
+            fontSize = 11.5.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
 
-        Spacer(Modifier.height(8.dp))
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(Modifier.padding(14.dp)) {
-                FactRow(tr("每次间隔都在 2–30 秒之间随机取值，不是固定节奏", "Every gap is a random 2–30 seconds, not a fixed beat"))
-                FactRow(
-                    tr(
-                        "起手位置每拍都会小幅漂移，轨迹带一点弯曲，先慢、中间快、收尾缓，约 0.38–0.64 秒",
-                        "Start point drifts a little each time; the path curves and eases in and out, about 0.38–0.64 s"
-                    )
-                )
-                FactRow(tr("点小球 ▶ 开始，图标变成 ❚❚；再点一下立刻停", "Tap ▶ on the ball to start, it turns ❚❚; tap again to stop"))
-                FactRow(tr("息屏自动暂停；系统里关掉无障碍开关就彻底停下", "Auto-pauses when the screen turns off; turning accessibility off stops everything"))
-                FactRow(tr("全程本地运行，不联网、不记录你看了什么", "Runs entirely on device; no network, no record of what you watched"))
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    tr(
-                        "一次上滑的成功率取决于目标应用：部分应用对无障碍手势有限制，遇到滑不动的界面说明它对这类操作做了限制。",
-                        "Whether a swipe works depends on the target app: some limit accessibility gestures, and a " +
-                            "screen that won't move is that app's restriction."
-                    ),
-                    fontSize = 10.5.sp,
-                    lineHeight = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                )
-            }
-        }
-
-        Spacer(Modifier.height(18.dp))
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "v" + BuildConfig.VERSION_NAME,
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text("  ·  ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(
-                tr("开源仓库", "Repository"),
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onOpenRepo() }
-            )
-            Text("  ·  ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(
-                tr("★ GitHub", "★ GitHub"),
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onOpenRepo() }
-            )
-            Text("  ·  ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(
-                tr("★ Gitee", "★ Gitee"),
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onOpenGitee() }
-            )
-        }
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(22.dp))
+        Footer(onOpenRepo = onOpenRepo, onOpenGitee = onOpenGitee)
+        Spacer(Modifier.height(14.dp))
     }
 }
 
 @Composable
-private fun StatusCard(
+private fun HeroCard(
     running: Boolean,
     accessibilityOn: Boolean,
     count: Int,
     left: Int,
-    lastGap: Int,
     ballVisible: Boolean,
     onStart: () -> Unit,
     onStop: () -> Unit,
     onToggleBall: () -> Unit
 ) {
-    val accent = when {
-        running -> BrandIndigo
-        accessibilityOn -> BrandBlue
-        else -> Color(0xFF8A94A3)
+    val gradient = if (running) {
+        Brush.linearGradient(
+            listOf(Color(0xFF4338CA), Color(0xFF7C5CF5), Color(0xFFA07BF7)),
+            start = Offset(0f, 0f),
+            end = Offset(900f, 760f)
+        )
+    } else {
+        Brush.linearGradient(
+            listOf(Color(0xFF1D4ED8), Color(0xFF4C8DF6), Color(0xFF7FB2FB)),
+            start = Offset(0f, 0f),
+            end = Offset(900f, 760f)
+        )
     }
     val title = when {
-        running -> tr("正在自动翻页", "Auto-swiping")
-        accessibilityOn -> tr("已暂停，等你点一下", "Paused — one tap to go")
-        else -> tr("还没开启无障碍服务", "Accessibility is off")
+        running -> tr("正在翻页", "Swiping")
+        accessibilityOn -> tr("已暂停", "Paused")
+        else -> tr("还没开始", "Not running")
     }
     val sub = when {
-        running -> buildString {
-            append(tr("已翻 $count 页", "$count swipes done"))
-            append(" · ")
-            append(tr("下次约 $left 秒", "next in ~$left s"))
-            if (lastGap > 0) {
-                append(" · ")
-                append(tr("上次间隔 $lastGap 秒", "last gap $lastGap s"))
-            }
-        }
-        accessibilityOn -> if (ballVisible) {
-            tr("点小球上的 ▶ 开始，图标变 ❚❚ 后随时能停", "Tap ▶ on the ball; it turns ❚❚ and you can stop anytime")
-        } else {
-            tr("先点下面的「显示小球」，或在应用内直接开始", "Tap “Show ball” below, or start right here")
-        }
-        ballVisible -> tr("小球已经显示出来了；还要开启无障碍服务，点它才会真的翻页", "The ball is showing; enable accessibility so it actually swipes")
-        else -> tr("小球只依赖悬浮窗权限，可以先显示；无障碍开关开了才会翻页", "The ball only needs the overlay permission; swiping needs accessibility")
+        running -> tr("已翻 $count 页 · 下次约 $left 秒", "$count swipes · next ~$left s")
+        accessibilityOn -> tr("点小球或下面的按钮开始", "Tap the ball or the button below")
+        else -> tr("先把无障碍打开", "Turn accessibility on first")
     }
 
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(26.dp))
+            .background(gradient)
+    ) {
+        // 右上角的装饰：一条向上的轨迹 + 两只箭头 + 一圈柔光，纯装饰，不承载信息
+        Canvas(Modifier.matchParentSize()) {
+            val c = Offset(size.width * 0.92f, size.height * 0.02f)
+            val r = size.width * 0.78f
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colorStops = arrayOf(0f to Color.White.copy(alpha = 0.22f), 1f to Color.Transparent),
+                    center = c,
+                    radius = r
+                ),
+                radius = r,
+                center = c
+            )
+            drawSwipeTrail(size.width * 0.82f, size.height * 0.34f, size.height * 0.92f)
+        }
+
+        Column(Modifier.padding(horizontal = 22.dp, vertical = 22.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    tr("自动翻页", "AUTO SWIPE"),
+                    fontSize = 11.sp,
+                    letterSpacing = 2.sp,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+                Spacer(Modifier.weight(1f))
+                Surface(
+                    shape = RoundedCornerShape(999.dp),
+                    color = Color.White.copy(alpha = 0.16f)
+                ) {
+                    Text(
+                        if (running) tr("运行中", "Running") else tr("待机", "Idle"),
+                        Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        fontSize = 10.5.sp,
+                        color = Color.White
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(18.dp))
+            Text(title, fontSize = 34.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Spacer(Modifier.height(6.dp))
+            Text(sub, fontSize = 12.5.sp, color = Color.White.copy(alpha = 0.8f))
+
+            Spacer(Modifier.height(26.dp))
+            val btnBg = if (accessibilityOn) Color.White else Color.White.copy(alpha = 0.35f)
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(btnBg)
+                    .clickable(enabled = accessibilityOn) { if (running) onStop() else onStart() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    if (running) tr("暂停", "Pause") else tr("开始翻页", "Start"),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (accessibilityOn) Color(0xFF33406B) else Color.White.copy(alpha = 0.7f)
+                )
+            }
+            Spacer(Modifier.height(6.dp))
+            Text(
+                if (ballVisible) tr("隐藏小球", "Hide ball") else tr("显示小球", "Show ball"),
+                fontSize = 12.sp,
+                color = Color.White.copy(alpha = 0.75f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onToggleBall() }
+                    .padding(vertical = 9.dp)
+            )
+        }
+    }
+}
+
+/** 在画布右侧画一条向上弯的轨迹 + 箭头，纯装饰。 */
+private fun DrawScope.drawSwipeTrail(x: Float, top: Float, bottom: Float) {
+    val p0 = Offset(x, bottom)
+    val p1 = Offset(x + 30f, top + (bottom - top) * 0.35f)
+    val p2 = Offset(x - 30f, top + (bottom - top) * 0.72f)
+    val p3 = Offset(x, top)
+
+    val path = Path()
+    path.moveTo(p0.x, p0.y)
+    path.cubicTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
+    drawPath(
+        path,
+        color = Color.White.copy(alpha = 0.36f),
+        style = Stroke(width = 2.6f, cap = StrokeCap.Round)
+    )
+
+    // 轨迹上的几个点，暗示一次次上滑，点都落在曲线上
+    for (i in 0..3) {
+        val t = 0.22f + i * 0.22f
+        drawCircle(Color.White.copy(alpha = 0.32f), radius = 3.6f, center = cubicAt(p0, p1, p2, p3, t))
+    }
+
+    // 顶部箭头
+    val head = Path()
+    head.moveTo(x - 12f, top + 16f)
+    head.lineTo(x, top)
+    head.lineTo(x + 12f, top + 16f)
+    drawPath(head, Color.White.copy(alpha = 0.42f), style = Stroke(width = 2.8f, cap = StrokeCap.Round))
+}
+
+private fun cubicAt(p0: Offset, p1: Offset, p2: Offset, p3: Offset, t: Float): Offset {
+    val u = 1f - t
+    val x = u * u * u * p0.x + 3f * u * u * t * p1.x + 3f * u * t * t * p2.x + t * t * t * p3.x
+    val y = u * u * u * p0.y + 3f * u * u * t * p1.y + 3f * u * t * t * p2.y + t * t * t * p3.y
+    return Offset(x, y)
+}
+
+private enum class Glyph { Swipe, Ball }
+
+@Composable
+private fun PermissionRow(
+    glyph: Glyph,
+    title: String,
+    hint: String,
+    done: Boolean,
+    onOpen: () -> Unit
+) {
     Surface(
         shape = RoundedCornerShape(18.dp),
         color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().clickable { onOpen() }
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier
-                        .size(9.dp)
-                        .background(accent, CircleShape)
-                )
-                Spacer(Modifier.width(9.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        title,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(Modifier.height(3.dp))
-                    Text(
-                        sub,
-                        fontSize = 11.5.sp,
-                        lineHeight = 17.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+        Row(
+            Modifier.padding(horizontal = 16.dp, vertical = 15.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                Modifier
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(
+                        if (done) SuccessGreen.copy(alpha = 0.12f) else BrandBlue.copy(alpha = 0.10f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(Modifier.size(20.dp)) {
+                    val c = if (done) SuccessGreen else BrandBlue
+                    when (glyph) {
+                        Glyph.Swipe -> {
+                            // 一条上滑轨迹 + 箭头
+                            val p = Path()
+                            p.moveTo(size.width * 0.5f, size.height * 0.95f)
+                            p.cubicTo(
+                                size.width * 0.8f, size.height * 0.7f,
+                                size.width * 0.2f, size.height * 0.4f,
+                                size.width * 0.5f, size.height * 0.05f
+                            )
+                            drawPath(p, c, style = Stroke(width = 2.6f, cap = StrokeCap.Round))
+                            val h = Path()
+                            h.moveTo(size.width * 0.3f, size.height * 0.24f)
+                            h.lineTo(size.width * 0.5f, size.height * 0.05f)
+                            h.lineTo(size.width * 0.7f, size.height * 0.24f)
+                            drawPath(h, c, style = Stroke(width = 2.6f, cap = StrokeCap.Round))
+                        }
+                        Glyph.Ball -> {
+                            drawCircle(c, radius = size.minDimension * 0.26f, center = center)
+                            drawCircle(
+                                c.copy(alpha = 0.35f),
+                                radius = size.minDimension * 0.42f,
+                                center = center,
+                                style = Stroke(width = 1.6f)
+                            )
+                        }
+                    }
                 }
             }
-
-            Spacer(Modifier.height(14.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = if (running) onStop else onStart,
-                    enabled = accessibilityOn,
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = accent),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(if (running) tr("暂停", "Pause") else tr("开始翻页", "Start"), fontSize = 13.sp)
-                }
-                OutlinedButton(
-                    onClick = onToggleBall,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        if (ballVisible) tr("隐藏小球", "Hide ball") else tr("显示小球", "Show ball"),
-                        fontSize = 13.sp
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun StepCard(
-    index: String,
-    title: String,
-    desc: String,
-    done: Boolean,
-    actionLabel: String,
-    onAction: () -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(Modifier.padding(14.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier
-                        .size(22.dp)
-                        .background(
-                            if (done) SuccessGreen.copy(alpha = 0.12f)
-                            else MaterialTheme.colorScheme.surfaceVariant,
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        if (done) "✓" else index,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (done) SuccessGreen else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Spacer(Modifier.width(9.dp))
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
                 Text(
                     title,
-                    fontSize = 14.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Surface(
-                    shape = RoundedCornerShape(999.dp),
-                    color = if (done) SuccessGreen.copy(alpha = 0.12f)
-                    else WarnAmber.copy(alpha = 0.12f)
-                ) {
-                    Text(
-                        if (done) tr("已开启", "On") else tr("未开启", "Off"),
-                        Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                        fontSize = 10.5.sp,
-                        color = if (done) SuccessGreen else WarnAmber
-                    )
-                }
+                Spacer(Modifier.height(3.dp))
+                Text(hint, fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                desc,
-                fontSize = 11.5.sp,
-                lineHeight = 17.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.height(10.dp))
-            OutlinedButton(
-                onClick = onAction,
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.fillMaxWidth()
+            Surface(
+                shape = RoundedCornerShape(999.dp),
+                color = if (done) SuccessGreen.copy(alpha = 0.12f) else BrandBlue.copy(alpha = 0.10f)
             ) {
-                Text(actionLabel, fontSize = 12.5.sp)
+                Text(
+                    if (done) tr("已开", "On") else tr("去开", "Turn on"),
+                    Modifier.padding(horizontal = 11.dp, vertical = 4.dp),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (done) SuccessGreen else BrandBlue
+                )
             }
         }
     }
 }
 
 @Composable
-private fun FactRow(text: String) {
-    Row(Modifier.padding(vertical = 3.dp)) {
-        Box(
-            Modifier
-                .padding(top = 5.dp)
-                .size(5.dp)
-                .background(BrandBlue.copy(alpha = 0.55f), CircleShape)
-        )
-        Spacer(Modifier.width(8.dp))
+private fun Tag(text: String) {
+    Surface(
+        shape = RoundedCornerShape(999.dp),
+        color = MaterialTheme.colorScheme.surface
+    ) {
         Text(
             text,
-            fontSize = 11.5.sp,
-            lineHeight = 18.sp,
+            Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+            fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun Footer(onOpenRepo: () -> Unit, onOpenGitee: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("v" + BuildConfig.VERSION_NAME, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("  ·  ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            "★ GitHub",
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.clickable { onOpenRepo() }
+        )
+        Text("  ·  ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            "★ Gitee",
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.clickable { onOpenGitee() }
         )
     }
 }
