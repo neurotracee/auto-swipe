@@ -74,7 +74,7 @@ fun HomeScreen(
             onToggleBall = onToggleBall
         )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(26.dp))
         PermissionRow(
             glyph = Glyph.Swipe,
             title = tr("无障碍服务", "Accessibility"),
@@ -82,7 +82,7 @@ fun HomeScreen(
             done = accessibilityOn,
             onOpen = onOpenAccessibility
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         PermissionRow(
             glyph = Glyph.Ball,
             title = tr("悬浮窗权限", "Overlay"),
@@ -91,19 +91,21 @@ fun HomeScreen(
             onOpen = onOpenOverlay
         )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(8.dp))
         Text(
             tr(
                 "2–30 秒随机 · 拟人轨迹 · 全程离线",
-                "2–30 s random · human-like path · fully offline"
+                "2–30 s · human-like · offline"
             ),
-            fontSize = 11.5.sp,
+            fontSize = 12.sp,
+            lineHeight = 20.sp,
+            letterSpacing = 0.4.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
         )
 
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(26.dp))
         Footer(onOpenRepo = onOpenRepo, onOpenGitee = onOpenGitee)
         Spacer(Modifier.height(14.dp))
     }
@@ -166,13 +168,14 @@ private fun HeroCard(
             drawSwipeTrail(size.width * 0.82f, size.height * 0.34f, size.height * 0.92f)
         }
 
-        Column(Modifier.padding(horizontal = 22.dp, vertical = 22.dp)) {
+        Column(Modifier.padding(horizontal = 22.dp, vertical = 24.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     tr("自动翻页", "AUTO SWIPE"),
                     fontSize = 11.sp,
-                    letterSpacing = 2.sp,
-                    color = Color.White.copy(alpha = 0.7f)
+                    lineHeight = 16.sp,
+                    letterSpacing = 2.4.sp,
+                    color = Color.White.copy(alpha = 0.72f)
                 )
                 Spacer(Modifier.weight(1f))
                 Surface(
@@ -181,24 +184,39 @@ private fun HeroCard(
                 ) {
                     Text(
                         if (running) tr("运行中", "Running") else tr("待机", "Idle"),
-                        Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        Modifier.padding(horizontal = 11.dp, vertical = 5.dp),
                         fontSize = 10.5.sp,
+                        lineHeight = 15.sp,
+                        letterSpacing = 0.6.sp,
                         color = Color.White
                     )
                 }
             }
 
-            Spacer(Modifier.height(18.dp))
-            Text(title, fontSize = 34.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Spacer(Modifier.height(6.dp))
-            Text(sub, fontSize = 12.5.sp, color = Color.White.copy(alpha = 0.8f))
-
             Spacer(Modifier.height(26.dp))
+            Text(
+                title,
+                fontSize = 34.sp,
+                lineHeight = 42.sp,
+                letterSpacing = 0.6.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                sub,
+                fontSize = 12.5.sp,
+                lineHeight = 19.sp,
+                letterSpacing = 0.3.sp,
+                color = Color.White.copy(alpha = 0.82f)
+            )
+
+            Spacer(Modifier.height(30.dp))
             val btnBg = if (accessibilityOn) Color.White else Color.White.copy(alpha = 0.35f)
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
+                    .height(54.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(btnBg)
                     .clickable(enabled = accessibilityOn) { if (running) onStop() else onStart() },
@@ -206,21 +224,25 @@ private fun HeroCard(
             ) {
                 Text(
                     if (running) tr("暂停", "Pause") else tr("开始翻页", "Start"),
-                    fontSize = 16.sp,
+                    fontSize = 16.5.sp,
+                    lineHeight = 22.sp,
+                    letterSpacing = 1.2.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = if (accessibilityOn) Color(0xFF33406B) else Color.White.copy(alpha = 0.7f)
                 )
             }
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
             Text(
                 if (ballVisible) tr("隐藏小球", "Hide ball") else tr("显示小球", "Show ball"),
                 fontSize = 12.sp,
+                lineHeight = 18.sp,
+                letterSpacing = 0.5.sp,
                 color = Color.White.copy(alpha = 0.75f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onToggleBall() }
-                    .padding(vertical = 9.dp)
+                    .padding(vertical = 10.dp)
             )
         }
     }
@@ -279,7 +301,7 @@ private fun PermissionRow(
         modifier = Modifier.fillMaxWidth().clickable { onOpen() }
     ) {
         Row(
-            Modifier.padding(horizontal = 16.dp, vertical = 15.dp),
+            Modifier.padding(horizontal = 16.dp, vertical = 17.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -322,16 +344,24 @@ private fun PermissionRow(
                     }
                 }
             }
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text(
                     title,
-                    fontSize = 15.sp,
+                    fontSize = 15.5.sp,
+                    lineHeight = 22.sp,
+                    letterSpacing = 0.3.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(Modifier.height(3.dp))
-                Text(hint, fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    hint,
+                    fontSize = 11.5.sp,
+                    lineHeight = 17.sp,
+                    letterSpacing = 0.2.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Surface(
                 shape = RoundedCornerShape(999.dp),
@@ -339,8 +369,10 @@ private fun PermissionRow(
             ) {
                 Text(
                     if (done) tr("已开", "On") else tr("去开", "Turn on"),
-                    Modifier.padding(horizontal = 11.dp, vertical = 4.dp),
+                    Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
                     fontSize = 11.sp,
+                    lineHeight = 16.sp,
+                    letterSpacing = 0.4.sp,
                     fontWeight = FontWeight.Medium,
                     color = if (done) SuccessGreen else BrandBlue
                 )
@@ -371,18 +403,28 @@ private fun Footer(onOpenRepo: () -> Unit, onOpenGitee: () -> Unit) {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("v" + BuildConfig.VERSION_NAME, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text("  ·  ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            "v" + BuildConfig.VERSION_NAME,
+            fontSize = 11.sp,
+            lineHeight = 18.sp,
+            letterSpacing = 0.4.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text("  ·  ", fontSize = 11.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(
             "★ GitHub",
             fontSize = 11.sp,
+            lineHeight = 18.sp,
+            letterSpacing = 0.4.sp,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.clickable { onOpenRepo() }
         )
-        Text("  ·  ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("  ·  ", fontSize = 11.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(
             "★ Gitee",
             fontSize = 11.sp,
+            lineHeight = 18.sp,
+            letterSpacing = 0.4.sp,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.clickable { onOpenGitee() }
         )

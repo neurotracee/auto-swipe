@@ -54,6 +54,23 @@
 
 ---
 
+## 下载与安装
+
+**直接下载（最新版，两个平台内容一致，哪个快下哪个）**
+
+- GitHub：[github.com/neurotracee/auto-swipe/releases/latest](https://github.com/neurotracee/auto-swipe/releases/latest)
+- Gitee：[gitee.com/bio234/auto-swipe/releases/latest](https://gitee.com/bio234/auto-swipe/releases/latest)
+
+安装包名 `AutoSwipe-<版本号>.apk`，当前版本见上方徽章或到 Release 页确认。
+
+1. 下载后点开安装；系统提示「未知来源」时允许即可，**装新版本直接覆盖，不用先卸载**。
+2. 打开应用，按首页两行权限依次打开：
+   - **无障碍**：设置 → 无障碍 → 已安装的服务 → 自动翻页 → 开启。
+     Android 13 及以上，侧载应用的开关默认是灰的：先到
+     「应用信息 → 右上角菜单 → 允许受限设置」，再回来开启。
+   - **悬浮窗**：设置 → 应用 → 特殊权限 → 悬浮窗 → 自动翻页 → 允许。
+3. 回应用点「显示小球」→ 球出现 → 点球上的 ▶ 开始 → 图标变 ⏸，再点一下停。
+
 ## 这个项目是谁做的
 
 - **指导作者：项目创作时为初中生。** 需求、交互设计、验收测试全部由本人完成。
@@ -213,17 +230,6 @@ GitHub / Gitee 两个仓库地址（可点开，打不开浏览器就复制链�
 球消失时把正在跑的循环一并停掉。
 ```
 
-## 安装
-
-1. 从 [Releases](https://github.com/neurotracee/auto-swipe/releases) 下载 `AutoSwipe-<版本号>.apk`。
-2. 系统会提示「未知来源」，允许后安装；**装新版本直接覆盖，不用先卸载**。
-3. 打开应用，按首页两步走：
-   - **无障碍**：设置 → 无障碍 → 已安装的服务 → 自动翻页 → 开启。
-     Android 13 及以上，侧载应用的开关默认是灰的：先到
-     「应用信息 → 右上角菜单 → 允许受限设置」，再回来开启。
-   - **悬浮窗**：设置 → 应用 → 特殊权限 → 悬浮窗 → 自动翻页 → 允许。
-4. 回应用点「显示小球」→ 球出现 → 点球上的 ▶ 开始 → 图标变 ⏸，再点一下停。
-
 ## 构建
 
 需要 **JDK 17 + Android SDK 34 + Gradle 8.x**（AGP 8.4.2）。本机实测用的路径写在
@@ -359,6 +365,21 @@ was retouched.
 <p align="center">
   <img src="docs/img/showcase/show-star-en.png" width="46%" alt="English about page: both star links, tip QR, version">
 </p>
+
+### Download & install
+
+**Direct links (latest build; both mirrors carry the same file, use whichever is faster)**
+
+- GitHub: [github.com/neurotracee/auto-swipe/releases/latest](https://github.com/neurotracee/auto-swipe/releases/latest)
+- Gitee: [gitee.com/bio234/auto-swipe/releases/latest](https://gitee.com/bio234/auto-swipe/releases/latest)
+
+The file is named `AutoSwipe-<version>.apk`; the current version shows on the badge at the top.
+
+1. Tap the APK to install; allow "unknown sources" when asked. New versions install over the old
+   one — no uninstall needed.
+2. In the app, turn on the two permissions: accessibility (Android 13+ sideloaded builds need
+   App info → menu → "Allow restricted settings" first) and overlay permission.
+3. Tap "Show ball", then ▶ on the ball; it turns ❚❚ and you can stop with one more tap.
 
 ### Who made this
 
@@ -498,14 +519,6 @@ No background networking, no analytics SDK, no crash reporting, no cloud model.
 Release bodies are bilingual: a Chinese section, then an English section headed
 `## English · Release Notes`. The app picks the section matching your language and falls back to
 the other one if needed.
-
-### Install
-
-1. Download `AutoSwipe-<version>.apk` from [Releases](https://github.com/neurotracee/auto-swipe/releases).
-2. Allow "unknown sources" when asked; new versions install over the old one — no uninstall needed.
-3. In the app, follow the two steps: accessibility (Android 13+ sideloaded builds need
-   App info → menu → "Allow restricted settings" first) and overlay permission.
-4. Tap "Show ball", then ▶ on the ball; it turns ❚❚ and you can stop with one more tap.
 
 ### Build
 
