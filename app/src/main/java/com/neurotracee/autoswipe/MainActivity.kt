@@ -225,24 +225,28 @@ private fun AppTopBar(onSettings: () -> Unit) {
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(start = 16.dp, end = 6.dp, top = 8.dp, bottom = 6.dp)
+            .padding(start = 16.dp, end = 6.dp, top = 12.dp, bottom = 8.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 tr("自动翻页", "AutoSwipe"),
-                fontSize = 19.sp,
+                fontSize = 20.sp,
+                lineHeight = 28.sp,
+                letterSpacing = 0.4.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            Spacer(Modifier.width(7.dp))
+            Spacer(Modifier.width(10.dp))
             Surface(
                 shape = RoundedCornerShape(999.dp),
                 color = BrandBlue.copy(alpha = 0.12f)
             ) {
                 Text(
                     tr("2–30 秒随机", "2–30 s random"),
-                    Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
-                    fontSize = 10.sp,
+                    Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                    fontSize = 10.5.sp,
+                    lineHeight = 15.sp,
+                    letterSpacing = 0.3.sp,
                     color = BrandBlue
                 )
             }
