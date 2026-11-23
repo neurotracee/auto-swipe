@@ -26,6 +26,9 @@ object LogBook {
     private const val DIR_NAME = "logs"
     private const val CRASH_FLAG = "crash-pending.txt"
 
+    /** 崩溃提示只对最近 7 天有效，避免旧记录一直挂着 */
+    private const val CRASH_FRESH_MS = 7L * 24 * 60 * 60 * 1000
+
     private val stamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
     private val dayFmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     private val io = Executors.newSingleThreadExecutor { r ->
@@ -58,7 +61,7 @@ object LogBook {
             write(ctx, "I", "App", "启动 " + summary(ctx))
             val crash = lastCrashAt
             if (crash > 0) {
-                write(ctx, "W", "App", "上次异常退出于 " + stamp.format(Date(crash)) + "（详见当日日志里的 E/Crash）")
+                write(ctx, "W", "App", "上次崩溃于 " + stamp.format(Date(crash)) + "：" + lastCrashTitle + "（堆栈见当日日志 E/Crash）")
             }
         }
     }
@@ -99,17 +102,25 @@ object LogBook {
         }
     }
 
+    /**
+     * 只在「上一次确实是未捕获异常」时才留标记：进程被系统回收、用户切到别的应用、
+     * 正常退出，都不会在这里凭空生成记录。标记读一次就删掉（一次性），
+     * 所以同一次崩溃不会在之后每次开屏都重复提醒。
+     */
     private fun readCrashFlag() {
         val ctx = app ?: return
         val f = File(dir(ctx), CRASH_FLAG)
         if (!f.exists()) return
         runCatching {
             val lines = f.readLines()
-            lastCrashAt = lines.getOrNull(0)?.toLongOrNull() ?: 0L
-            lastCrashTitle = lines.getOrNull(1).orEmpty()
+            val at = lines.getOrNull(0)?.toLongOrNull() ?: 0L
+            // 太旧的记录就别再打扰了
+            if (at > 0 && System.currentTimeMillis() - at <= CRASH_FRESH_MS) {
+                lastCrashAt = at
+                lastCrashTitle = lines.getOrNull(1).orEmpty()
+            }
         }
-        if (lastCrashAt == 0L) lastCrashAt = System.currentTimeMillis()
-        // 标记保留到用户主动关掉提示为止
+        runCatching { f.delete() }
     }
 
     /** 用户在首页点掉「上次崩了」的提示后调用 */

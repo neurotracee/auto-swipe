@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -55,7 +56,9 @@ fun HomeScreen(
     onOpenRepo: () -> Unit,
     onOpenGitee: () -> Unit,
     crashNotice: Boolean = false,
-    onOpenLogs: () -> Unit = {}
+    crashTitle: String = "",
+    onOpenLogs: () -> Unit = {},
+    onDismissCrash: () -> Unit = {}
 ) {
     Column(
         Modifier
@@ -66,7 +69,7 @@ fun HomeScreen(
         Spacer(Modifier.height(14.dp))
 
         if (crashNotice) {
-            CrashNoticeRow(onOpenLogs)
+            CrashNoticeRow(crashTitle, onOpenLogs, onDismissCrash)
             Spacer(Modifier.height(14.dp))
         }
 
@@ -256,20 +259,30 @@ private fun HeroCard(
 }
 
 @Composable
-private fun CrashNoticeRow(onOpenLogs: () -> Unit) {
+private fun CrashNoticeRow(crashTitle: String, onOpenLogs: () -> Unit, onDismiss: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = WarnAmber.copy(alpha = 0.12f),
-        modifier = Modifier.fillMaxWidth().clickable { onOpenLogs() }
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
             Text(
-                tr("上次异常退出过", "The app crashed last time"),
+                tr("上次崩过一次", "The app crashed last time"),
                 fontSize = 13.5.sp,
                 lineHeight = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF8A5A00)
             )
+            if (crashTitle.isNotBlank()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    crashTitle,
+                    fontSize = 10.5.sp,
+                    lineHeight = 15.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0xFF8A5A00)
+                )
+            }
             Spacer(Modifier.height(4.dp))
             Text(
                 tr(
@@ -281,7 +294,16 @@ private fun CrashNoticeRow(onOpenLogs: () -> Unit) {
                 color = Color(0xFF8A5A00).copy(alpha = 0.85f)
             )
             Spacer(Modifier.height(6.dp))
-            Text(tr("查看日志 ›", "Open logs ›"), fontSize = 11.5.sp, color = BrandBlue)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(tr("查看日志 ›", "Open logs ›"), fontSize = 11.5.sp, color = BrandBlue, modifier = Modifier.clickable { onOpenLogs() })
+                Spacer(Modifier.width(14.dp))
+                Text(
+                    tr("知道了", "Dismiss"),
+                    fontSize = 11.5.sp,
+                    color = Color(0xFF8A5A00).copy(alpha = 0.7f),
+                    modifier = Modifier.clickable { onDismiss() }
+                )
+            }
         }
     }
 }

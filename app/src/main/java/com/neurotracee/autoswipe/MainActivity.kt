@@ -195,7 +195,12 @@ private fun AppRoot() {
                     }
                 },
                 crashNotice = AppState.crashNotice,
+                crashTitle = LogBook.lastCrashTitle,
                 onOpenLogs = { showLogs = true },
+                onDismissCrash = {
+                    LogBook.dismissCrash(ctx)
+                    AppState.crashNotice = false
+                },
                 onOpenGitee = {
                     if (!com.neurotracee.autoswipe.ui.openUrlInBrowser(
                             ctx, "https://gitee.com/bio234/auto-swipe"
