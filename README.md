@@ -200,6 +200,12 @@ GitHub / Gitee 两个仓库地址（可点开，打不开浏览器就复制链�
 
 日志全部写在本机 `filesDir/logs/`，不联网、不上传。
 
+<img src="docs/img/log-zh.png" width="320" alt="日志与问题反馈（中文）">
+
+上一次异常退出时，首页会多这么一行提示：
+
+<img src="docs/img/crash-zh.png" width="320" alt="首页的崩溃提示">
+
 ## 隐私
 
 没有后台联网，没有统计 SDK，没有崩溃上报，没有云端模型。
@@ -513,6 +519,8 @@ Since 1.1.0.0 the app keeps its own log, so a bug report does not have to be a g
 - **Issue template:** the end of the page holds a ready template — version & device, steps 1./2./3., what you saw, what you expected, how to hand over the log — one tap to copy, with GitHub and Gitee Issues right beside it.
 
 Everything is written to the app's own `filesDir/logs/`; nothing is networked or uploaded.
+
+<img src="docs/img/log-en.png" width="320" alt="Logs & feedback (English)">
 
 ### Privacy
 

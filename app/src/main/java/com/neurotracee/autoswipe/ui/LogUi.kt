@@ -4,10 +4,10 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
@@ -205,15 +206,14 @@ fun LogDialog(onClose: () -> Unit) {
                         Text(
                             if (body.isEmpty()) tr("（还没有日志）", "(no log lines yet)")
                             else body,
-                            fontSize = 10.5.sp,
-                            lineHeight = 15.sp,
+                            fontSize = 10.sp,
+                            lineHeight = 16.sp,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(280.dp)
+                                .heightIn(min = 120.dp, max = 280.dp)
                                 .verticalScroll(rememberScrollState())
-                                .horizontalScroll(rememberScrollState())
                                 .padding(12.dp)
                         )
                     }
@@ -410,7 +410,12 @@ private fun LogAction(text: String, primary: Boolean, danger: Boolean = false, o
         primary -> BrandBlue
         else -> MaterialTheme.colorScheme.onSurface
     }
-    Surface(shape = RoundedCornerShape(10.dp), color = bg, modifier = Modifier.clickable { onClick() }) {
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = bg,
+        border = if (!primary && !danger) BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)) else null,
+        modifier = Modifier.clickable { onClick() }
+    ) {
         Text(text, Modifier.padding(horizontal = 14.dp, vertical = 9.dp), fontSize = 12.5.sp, color = fg)
     }
 }
