@@ -1,6 +1,17 @@
 package com.neurotracee.autoswipe.ui
 
 import android.widget.Toast
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,11 +54,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
@@ -483,6 +497,8 @@ private fun FeedbackBlock(count: Int, onCopy: (String) -> Unit) {
     }
 }
 
+private val WheelRow = 42.dp
+
 @Composable
 private fun StepperTimeDialog(
     isStart: Boolean,
@@ -502,11 +518,11 @@ private fun StepperTimeDialog(
             Row(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                StepperUnit(tr("时", "Hour"), hour, 23, true, onHourChange, onTouch = { onHourChange(hour) })
-                Text(":", fontSize = 26.sp, color = MaterialTheme.colorScheme.onSurface)
-                StepperUnit(tr("分", "Minute"), minute, 59, hourUnlocked, onMinuteChange)
+                WheelUnit(tr("时", "Hour"), hour, 23, true, onHourChange, Modifier.weight(1f))
+                Text(":", fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurface)
+                WheelUnit(tr("分", "Minute"), minute, 59, hourUnlocked, onMinuteChange, Modifier.weight(1f))
             }
         },
         confirmButton = {
@@ -520,73 +536,138 @@ private fun StepperTimeDialog(
     )
 }
 
+/**
+ * 一个滚轮：像行李箱密码扣那样，手指上下推、数字跟着走，松手吸附到最近一格。
+ * 中间亮着的那格是选中值；轻点滚轮可以直接打字输入。
+ */
 @Composable
-private fun StepperUnit(
+private fun WheelUnit(
     label: String,
     value: Int,
     max: Int,
     enabled: Boolean,
     onChange: (Int) -> Unit,
-    onTouch: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
-    var tv by remember { mutableStateOf(TextFieldValue(fmt2(value))) }
-    var fieldFocused by remember { mutableStateOf(false) }
-    // 外部（步进键、滑动）改了值，就把显示跟过去；正打着字时不打扰
-    LaunchedEffect(value) {
-        if (fieldFocused) return@LaunchedEffect
-        val cur = tv.text.toIntOrNull()
-        if (cur != value) tv = TextFieldValue(fmt2(value), TextRange(fmt2(value).length))
-    }
+    var local by remember { mutableStateOf(value) }
+    LaunchedEffect(value) { if (local != value) local = value }
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    val rowPx = with(LocalDensity.current) { WheelRow.toPx() }
+    var shift by remember { mutableStateOf(0f) }
+    val scope = rememberCoroutineScope()
+    var typing by remember { mutableStateOf(false) }
+
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        TextButton(
-            enabled = enabled,
-            onClick = { onChange(stepWrap(value, 1, max)) },
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(4.dp)
-        ) { Text("▲", fontSize = 14.sp, color = if (enabled) BrandBlue else Color.Gray) }
-
-        OutlinedTextField(
-            value = tv,
-            onValueChange = { raw ->
-                val digits = raw.text.filter { it.isDigit() }.takeLast(2)
-                val v = (digits.toIntOrNull() ?: 0).coerceIn(0, max)
-                // 打字时先按原样显示，失焦后再补齐两位，免得边打边跳
-                tv = TextFieldValue(digits, TextRange(digits.length))
-                onChange(v)
-            },
-            enabled = enabled,
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            textStyle = androidx.compose.ui.text.TextStyle(
-                fontSize = 22.sp,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            ),
-            placeholder = { Text(if (fieldFocused) fmt2(value) else "", fontSize = 22.sp, color = Color.Gray) },
-            modifier = Modifier
-                .width(86.dp)
-                // 一进焦点就清空并占位显示旧值，打的数字直接顶掉原来的，不会变成「21」后面接「7」
-                .onFocusChanged { st ->
-                    fieldFocused = st.isFocused
-                    if (st.isFocused) {
-                        tv = TextFieldValue("", TextRange(0))
-                        onTouch()
-                    } else if (tv.text.length < 2) {
-                        tv = TextFieldValue(fmt2(value), TextRange(2))
+        Spacer(Modifier.height(6.dp))
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(WheelRow * 3)
+                .clip(RoundedCornerShape(12.dp))
+                .background(
+                    if (enabled) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
+                )
+                .pointerInput(enabled, rowPx) {
+                    if (!enabled) return@pointerInput
+                    detectVerticalDragGestures(
+                        onDragStart = { shift = 0f },
+                        onDragEnd = {
+                            scope.launch {
+                                animate(shift, 0f, animationSpec = tween(180)) { v, _ -> shift = v }
+                            }
+                        },
+                        onDragCancel = {
+                            scope.launch {
+                                animate(shift, 0f, animationSpec = tween(180)) { v, _ -> shift = v }
+                            }
+                        }
+                    ) { change, dy ->
+                        change.consume()
+                        var acc = shift + dy
+                        while (acc <= -rowPx) {
+                            acc += rowPx
+                            local = stepWrap(local, 1, max)
+                            onChange(local)
+                        }
+                        while (acc >= rowPx) {
+                            acc -= rowPx
+                            local = stepWrap(local, -1, max)
+                            onChange(local)
+                        }
+                        shift = acc.coerceIn(-rowPx * 1.2f, rowPx * 1.2f)
                     }
                 }
-                .stepDrag(
-                    enabled = enabled,
-                    onUp = { onChange(stepWrap(value, 1, max)) },
-                    onDown = { onChange(stepWrap(value, -1, max)) }
-                )
-        )
+                .clickable(enabled = enabled) { typing = true },
+            contentAlignment = Alignment.Center
+        ) {
+            // 选中那一格的底
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(WheelRow)
+                    .align(Alignment.Center)
+                    .border(1.dp, if (enabled) BrandBlue.copy(alpha = 0.45f) else Color.Transparent, RoundedCornerShape(10.dp))
+            )
+            val d = LocalDensity.current
+            for (k in -2..2) {
+                val pos = shift + k * rowPx
+                if (pos > -2.2f * rowPx && pos < 2.2f * rowPx) {
+                    val alpha = (1f - kotlin.math.abs(pos) / (2.2f * rowPx)).coerceIn(0.12f, 1f)
+                    val centered = kotlin.math.abs(pos) < rowPx * 0.5f
+                    Text(
+                        fmt2(stepWrap(local, k, max)),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .offset(y = with(d) { pos.toDp() }),
+                        fontSize = 22.sp,
+                        fontWeight = if (centered) FontWeight.SemiBold else FontWeight.Normal,
+                        color = (if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
+                            .copy(alpha = alpha)
+                    )
+                }
+            }
+        }
+    }
 
-        TextButton(
-            enabled = enabled,
-            onClick = { onChange(stepWrap(value, -1, max)) },
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(4.dp)
-        ) { Text("▼", fontSize = 14.sp, color = if (enabled) BrandBlue else Color.Gray) }
+    if (typing) {
+        var txt by remember { mutableStateOf("") }
+        val fr = remember { FocusRequester() }
+        val kb = LocalSoftwareKeyboardController.current
+        val done: () -> Unit = {
+            val v = txt.toIntOrNull()
+            if (v != null) {
+                val c = v.coerceIn(0, max)
+                local = c
+                onChange(c)
+            }
+            typing = false
+            kb?.hide()
+        }
+        AlertDialog(
+            onDismissRequest = { typing = false },
+            title = { Text(label) },
+            text = {
+                OutlinedTextField(
+                    value = txt,
+                    onValueChange = { txt = it.filter { ch -> ch.isDigit() }.take(2) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        fontSize = 22.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    ),
+                    placeholder = { Text(fmt2(value), fontSize = 22.sp, color = Color.Gray) },
+                    modifier = Modifier
+                        .width(120.dp)
+                        .focusRequester(fr)
+                )
+            },
+            confirmButton = { TextButton(onClick = done) { Text(tr("确定", "OK")) } },
+            dismissButton = { TextButton(onClick = { typing = false; kb?.hide() }) { Text(tr("取消", "Cancel")) } }
+        )
+        LaunchedEffect(Unit) { fr.requestFocus(); kb?.show() }
     }
 }
 
@@ -594,26 +675,3 @@ private fun fmt2(v: Int): String = String.format(Locale.US, "%02d", v)
 
 private fun stepWrap(v: Int, delta: Int, max: Int): Int =
     ((v + delta) % (max + 1) + (max + 1)) % (max + 1)
-
-/**
- * 在 Initial 阶段先吃掉纵向拖动的手势：数字输入框自己会拿拖动去做光标选择，
- * 挂在 Main 阶段会被它先消费掉，滑动就失效了。这里先咬住，再交还点击给输入框。
- */
-private fun Modifier.stepDrag(enabled: Boolean, onUp: () -> Unit, onDown: () -> Unit): Modifier =
-    if (!enabled) this else this.pointerInput(Unit) {
-        awaitPointerEventScope {
-            var acc = 0f
-            var tracking = false
-            while (true) {
-                val ev = awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
-                val ch = ev.changes.firstOrNull() ?: continue
-                if (ch.pressed && !tracking) { tracking = true; acc = 0f }
-                if (tracking) {
-                    acc += ch.position.y - ch.previousPosition.y
-                    if (acc <= -30f) { ch.consume(); onUp(); acc = 0f }
-                    else if (acc >= 30f) { ch.consume(); onDown(); acc = 0f }
-                }
-                if (!ch.pressed) { tracking = false; acc = 0f }
-            }
-        }
-    }

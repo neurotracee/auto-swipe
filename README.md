@@ -195,17 +195,13 @@ GitHub / Gitee 两个仓库地址（可点开，打不开浏览器就复制链�
 - **崩溃也留**：只有未捕获异常才记成崩溃；堆栈写进当天日志，下次启动首页多一行提示，点进去就能看。
 - **怎么算崩溃**：按 Home / 多任务切走、系统低内存回收、强制停止、正常退出、重启更新都不算崩溃，不写标记、不弹提示；ANR（应用无响应）与原生层崩溃本版本不据此推断。
 - **两个视角**：「本次启动」只看这次打开之后的；「最近一年」能翻 365 天内的全部记录，更早的在启动时自动清掉。
-- **按分钟找**：点起始 / 结束的时间块，先选日期再选时分；时、分支持上下步进、上下滑动和键盘输入，默认先选时、选完才解锁分。
+- **按分钟找**：点起始 / 结束的时间块，先选日期再选时分；时、分各是一只滚轮，像密码扣那样手指上下推、数字跟着走、松手吸附到最近一格，轻点滚轮可直接打字输入；默认先选时、选完才解锁分。
 - **复制 / 存 TXT / 清除**：复制进剪贴板；存 TXT 走系统「保存到…」，不申请存储权限；清除要过两次确认，第一道先说范围与行数。
 - **反馈模板**：页面末尾按要求写好「版本与设备、复现步骤 1./2./3.、实际看到、预期、日志怎么给」，一键复制，旁边直达 GitHub / Gitee Issues。
 
 日志全部写在本机 `filesDir/logs/`，不联网、不上传。
 
 <img src="docs/img/log-zh.png" width="320" alt="日志与问题反馈（中文）">
-
-点起始 / 结束的时间块，进去是这样：时、分各配上下步进键，也能上下滑动或直接敲键盘：
-
-<img src="docs/img/time-zh.png" width="320" alt="时分选择（中文）">
 
 
 上一次真正崩溃（未捕获异常）时，首页会多这么一行提示：
@@ -521,7 +517,7 @@ Since 1.1.0.0 the app keeps its own log, so a bug report does not have to be a g
 - **Survives crashes:** only an uncaught exception counts as a crash; its stack trace goes to that day's file, and the next launch puts a notice on the home screen that opens the log page.
 - **What does not count:** going to background, being reclaimed by low memory, force-stop, a normal exit, or a reboot/update are not crashes — no flag, no notice. ANRs and native crashes are not inferred as crashes in this release.
 - **Two views:** "This session" shows lines since this launch; "Last 12 months" reaches everything within 365 days, with older files removed on launch.
-- **Pick to the minute:** tap the start or end chip, choose a date, then a time; hour and minute each support steppers, vertical swipe and keyboard input. The minute unlocks only after the hour is touched.
+- **Pick to the minute:** tap the start or end chip, choose a date, then a time; hour and minute are each a wheel — push up or down like a combination lock, digits follow and snap on release, and tapping a wheel lets you type. The minute unlocks only after the hour is touched.
 - **Copy / save TXT / clear:** copying goes to the clipboard; saving uses the system "Save as…" picker and needs no storage permission; clearing asks twice, the first dialog listing the range and line count.
 - **Issue template:** the end of the page holds a ready template — version & device, steps 1./2./3., what you saw, what you expected, how to hand over the log — one tap to copy, with GitHub and Gitee Issues right beside it.
 
