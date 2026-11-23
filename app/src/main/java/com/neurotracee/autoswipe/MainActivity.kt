@@ -48,6 +48,7 @@ import com.neurotracee.autoswipe.ui.AutoUpdateGate
 import com.neurotracee.autoswipe.ui.AutoSwipeTheme
 import com.neurotracee.autoswipe.ui.BrandBlue
 import com.neurotracee.autoswipe.ui.HomeScreen
+import com.neurotracee.autoswipe.ui.LogDialog
 import com.neurotracee.autoswipe.ui.ManualUpdateDialog
 import com.neurotracee.autoswipe.ui.SettingsDialog
 import com.neurotracee.autoswipe.ui.tr
@@ -74,6 +75,7 @@ private fun AppRoot() {
     val ctx = LocalContext.current
     var showSettings by remember { mutableStateOf(false) }
     var showUpdate by remember { mutableStateOf(false) }
+    var showLogs by remember { mutableStateOf(false) }
     var accessibilityOn by remember { mutableStateOf(SwipeAccessibilityService.isEnabled(ctx)) }
     var overlayOn by remember { mutableStateOf(SwipeAccessibilityService.canOverlay(ctx)) }
 
@@ -131,6 +133,7 @@ private fun AppRoot() {
 
     fun toggleBall() {
         if (AppState.ballVisible) {
+            LogBook.log("Ball", "隐藏小球")
             BallService.stop(ctx)
             AppPrefs.markBallVisible(false)
             toast(tr("小球已隐藏", "Floating ball hidden"))
@@ -141,6 +144,7 @@ private fun AppRoot() {
             openOverlay()
             return
         }
+        LogBook.log("Ball", "显示小球")
         if (BallService.start(ctx)) {
             toast(tr("小球已显示：点 ▶ 开始，再点 ⏸ 暂停", "Ball shown: tap ▶ to start, ❚❚ to stop"))
         } else {
@@ -156,11 +160,13 @@ private fun AppRoot() {
             openAccessibility()
             return
         }
+        LogBook.log("Swipe", "开始自动翻页")
         svc.start()
         toast(tr("已开始：第一次约 1.5 秒后上滑，之后每 2–30 秒随机一次", "Started: first swipe in ~1.5 s, then every 2–30 s at random"))
     }
 
     fun stopAuto() {
+        LogBook.log("Swipe", "暂停自动翻页，已翻 " + AppState.swipeCount + " 页")
         SwipeAccessibilityService.instance?.stop()
         toast(tr("已暂停", "Paused"))
     }
@@ -188,6 +194,8 @@ private fun AppRoot() {
                         toast(tr("没能打开浏览器，请手动访问仓库地址", "Could not open a browser; visit the repository manually"))
                     }
                 },
+                crashNotice = AppState.crashNotice,
+                onOpenLogs = { showLogs = true },
                 onOpenGitee = {
                     if (!com.neurotracee.autoswipe.ui.openUrlInBrowser(
                             ctx, "https://gitee.com/bio234/auto-swipe"
@@ -209,8 +217,17 @@ private fun AppRoot() {
                 showSettings = false
                 showUpdate = true
             },
-            onToggleBall = { toggleBall() }
+            onToggleBall = { toggleBall() },
+            onOpenLogs = { showLogs = true }
         )
+    }
+
+    if (showLogs) {
+        AppState.crashNotice = false
+        LogDialog(onClose = {
+            LogBook.dismissCrash(ctx)
+            showLogs = false
+        })
     }
 
     if (showUpdate) {

@@ -30,4 +30,7 @@ object AppState {
 
     /** 最近一次实际使用的间隔（秒），用来让用户确认「确实是随机的」 */
     var lastGapSeconds by mutableStateOf(0)
+
+    /** 上次是不是异常退出：首页会因此多一行「去看日志」的提示 */
+    var crashNotice by mutableStateOf(false)
 }

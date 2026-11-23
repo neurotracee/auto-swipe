@@ -187,11 +187,25 @@ https://gitee.com/bio234/auto-swipe      # mirror / 镜像（国内访问更快�
 二级页写明：版本、这个应用是什么、署名三条、AGPL-3.0-or-later 与第 7 条 (b) 附加条款、
 GitHub / Gitee 两个仓库地址（可点开，打不开浏览器就复制链接）、权限清单、第三方组件清单。
 
+## 日志与问题反馈
+
+从 1.1.0.0 起，应用自己会记日志，出问题时你不必靠猜。
+
+- **自动记**：每次打开写一行「版本 · 机型 · Android 版本」，之后开始翻页、暂停、显示 / 隐藏小球各留一条。
+- **崩溃也留**：异常退出时堆栈会写进当天日志，下次启动首页多一行提示，点进去就能看。
+- **两个视角**：「本次启动」只看这次打开之后的；「最近一年」能翻 365 天内的全部记录，更早的在启动时自动清掉。
+- **按分钟找**：点起始 / 结束的时间块，先选日期再选时分，直接对准当时那条报错。
+- **复制 / 存 TXT / 清除**：复制进剪贴板；存 TXT 走系统「保存到…」，不申请存储权限；清除要过两次确认，第一道先说范围与行数。
+- **反馈模板**：页面末尾按要求写好「版本与设备、复现步骤 1./2./3.、实际看到、预期、日志怎么给」，一键复制，旁边直达 GitHub / Gitee Issues。
+
+日志全部写在本机 `filesDir/logs/`，不联网、不上传。
+
 ## 隐私
 
 没有后台联网，没有统计 SDK，没有崩溃上报，没有云端模型。
 
 - 手势只在设备本地执行，滑动轨迹不记录、不上传。
+- 运行日志与崩溃堆栈只写在本机（`filesDir/logs/`，保留 365 天），可随时在设置里复制或删除，不会自动上报。
 - 设置（主题、球的位置、更新源）只存在本机 `SharedPreferences` 里。
 - 唯一的联网行为：你点「检查更新」（或开启启动时自动检查）时，向 Gitee / GitHub 读一次
   公开的发布列表；点「立即更新」后，才从这两个官方域名下载安装包。
@@ -485,11 +499,27 @@ them are stored locally in `SharedPreferences`.
 | **Version** | Shows the current version; "Check" runs a check right there |
 | **About & open source ›** | Second level: version, purpose, the three credit lines, AGPL-3.0-or-later with the §7(b) additional terms, both repository links (tap to open, or copy if no browser), permission list, third-party components |
 
+| **Logs** | Second level → "View logs": this session or the last 365 days, pick a range to the minute, copy, save as TXT, or clear with two confirmations |
+
+### Logs & feedback
+
+Since 1.1.0.0 the app keeps its own log, so a bug report does not have to be a guessing game.
+
+- **Written from launch:** each launch records version, device model and Android version; start, pause and show/hide ball each add a line.
+- **Survives crashes:** an uncaught exception appends the stack trace to that day's file, and the next launch puts a notice on the home screen that opens the log page.
+- **Two views:** "This session" shows lines since this launch; "Last 12 months" reaches everything within 365 days, with older files removed on launch.
+- **Pick to the minute:** tap the start or end chip, choose a date, then a time — enough to land on the exact error you saw.
+- **Copy / save TXT / clear:** copying goes to the clipboard; saving uses the system "Save as…" picker and needs no storage permission; clearing asks twice, the first dialog listing the range and line count.
+- **Issue template:** the end of the page holds a ready template — version & device, steps 1./2./3., what you saw, what you expected, how to hand over the log — one tap to copy, with GitHub and Gitee Issues right beside it.
+
+Everything is written to the app's own `filesDir/logs/`; nothing is networked or uploaded.
+
 ### Privacy
 
 No background networking, no analytics SDK, no crash reporting, no cloud model.
 
 - Gestures run entirely on the device; the path is not recorded or uploaded.
+- Runtime logs and crash traces stay on the device (`filesDir/logs/`, 365 days) and can be copied or deleted in Settings; nothing is uploaded automatically.
 - Settings live in the app's own `SharedPreferences`.
 - The only network traffic is the update check: one request for a public release list on
   Gitee / GitHub, plus the APK download you explicitly start.

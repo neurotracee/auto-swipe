@@ -53,7 +53,9 @@ fun HomeScreen(
     onStart: () -> Unit,
     onStop: () -> Unit,
     onOpenRepo: () -> Unit,
-    onOpenGitee: () -> Unit
+    onOpenGitee: () -> Unit,
+    crashNotice: Boolean = false,
+    onOpenLogs: () -> Unit = {}
 ) {
     Column(
         Modifier
@@ -62,6 +64,11 @@ fun HomeScreen(
             .padding(horizontal = 18.dp)
     ) {
         Spacer(Modifier.height(14.dp))
+
+        if (crashNotice) {
+            CrashNoticeRow(onOpenLogs)
+            Spacer(Modifier.height(14.dp))
+        }
 
         HeroCard(
             running = AppState.running,
@@ -244,6 +251,37 @@ private fun HeroCard(
                     .clickable { onToggleBall() }
                     .padding(vertical = 11.dp)
             )
+        }
+    }
+}
+
+@Composable
+private fun CrashNoticeRow(onOpenLogs: () -> Unit) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = WarnAmber.copy(alpha = 0.12f),
+        modifier = Modifier.fillMaxWidth().clickable { onOpenLogs() }
+    ) {
+        Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+            Text(
+                tr("上次异常退出过", "The app crashed last time"),
+                fontSize = 13.5.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF8A5A00)
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                tr(
+                    "日志已经存下来了。去「设置 → 关于与开源信息 → 日志」能看到当时的堆栈，复制或存成 TXT 就能反馈。",
+                    "The log was saved. Open Settings → About & open source → Logs to see the stack trace, then copy it or save a TXT."
+                ),
+                fontSize = 11.sp,
+                lineHeight = 17.sp,
+                color = Color(0xFF8A5A00).copy(alpha = 0.85f)
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(tr("查看日志 ›", "Open logs ›"), fontSize = 11.5.sp, color = BrandBlue)
         }
     }
 }
