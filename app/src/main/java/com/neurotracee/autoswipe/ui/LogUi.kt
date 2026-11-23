@@ -32,21 +32,27 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,7 +61,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.neurotracee.autoswipe.BuildConfig
 import com.neurotracee.autoswipe.LogBook
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -238,7 +243,8 @@ fun LogDialog(onClose: () -> Unit) {
         }
     }
 
-    // 时间选择：先选日期，再选时分。editing 1 = 起始，2 = 结束
+    // 时间选择：先选日期，再选时分。editing 1 = 起始，2 = 结束。
+    // 时分状态挂在这一层：上一步退回日期页时，已经填好的分不会被重置。
     if (editing != 0) {
         val isStart = editing == 1
         val anchor = Calendar.getInstance().apply { timeInMillis = if (isStart) from else to }
@@ -246,6 +252,9 @@ fun LogDialog(onClose: () -> Unit) {
         var y by remember(editing) { mutableStateOf(anchor.get(Calendar.YEAR)) }
         var m by remember(editing) { mutableStateOf(anchor.get(Calendar.MONTH)) }
         var d by remember(editing) { mutableStateOf(anchor.get(Calendar.DAY_OF_MONTH)) }
+        var hh by remember(editing) { mutableStateOf(anchor.get(Calendar.HOUR_OF_DAY)) }
+        var mm by remember(editing) { mutableStateOf(anchor.get(Calendar.MINUTE)) }
+        var hourTouched by remember(editing) { mutableStateOf(false) }
         val dateState = rememberDatePickerState(initialSelectedDateMillis = utcMidnight(y, m, d))
 
         if (!pickingTime) {
@@ -270,27 +279,22 @@ fun LogDialog(onClose: () -> Unit) {
                 DatePicker(state = dateState, showModeToggle = false)
             }
         } else {
-            val timeState = rememberTimePickerState(
-                initialHour = anchor.get(Calendar.HOUR_OF_DAY),
-                initialMinute = anchor.get(Calendar.MINUTE),
-                is24Hour = true
-            )
-            AlertDialog(
-                onDismissRequest = { pickingTime = false },
-                title = { Text(if (isStart) tr("起始时刻", "Start time") else tr("结束时刻", "End time")) },
-                text = { TimePicker(state = timeState) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        val ms = LogBook.atMinute(y, m, d, timeState.hour, timeState.minute, end = !isStart)
-                        if (isStart) from = ms else to = ms
-                        if (from > to) { val t = from; from = to; to = t }
-                        tick++
-                        pickingTime = false
-                        editing = 0
-                    }) { Text(tr("确定", "OK")) }
-                },
-                dismissButton = {
-                    TextButton(onClick = { pickingTime = false }) { Text(tr("取消", "Cancel")) }
+            StepperTimeDialog(
+                isStart = isStart,
+                hour = hh,
+                minute = mm,
+                hourUnlocked = hourTouched,
+                onHourChange = { hh = it; hourTouched = true },
+                onMinuteChange = { mm = it },
+                onBackToDate = { pickingTime = false },
+                onCancel = { editing = 0 },
+                onConfirm = {
+                    val ms = LogBook.atMinute(y, m, d, hh, mm, end = !isStart)
+                    if (isStart) from = ms else to = ms
+                    if (from > to) { val t = from; from = to; to = t }
+                    tick++
+                    pickingTime = false
+                    editing = 0
                 }
             )
         }
@@ -478,3 +482,138 @@ private fun FeedbackBlock(count: Int, onCopy: (String) -> Unit) {
         }
     }
 }
+
+@Composable
+private fun StepperTimeDialog(
+    isStart: Boolean,
+    hour: Int,
+    minute: Int,
+    hourUnlocked: Boolean,
+    onHourChange: (Int) -> Unit,
+    onMinuteChange: (Int) -> Unit,
+    onBackToDate: () -> Unit,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onBackToDate,
+        title = { Text(if (isStart) tr("起始时刻", "Start time") else tr("结束时刻", "End time")) },
+        text = {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                StepperUnit(tr("时", "Hour"), hour, 23, true, onHourChange, onTouch = { onHourChange(hour) })
+                Text(":", fontSize = 26.sp, color = MaterialTheme.colorScheme.onSurface)
+                StepperUnit(tr("分", "Minute"), minute, 59, hourUnlocked, onMinuteChange)
+            }
+        },
+        confirmButton = {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = onCancel) { Text(tr("取消", "Cancel")) }
+                TextButton(onClick = onBackToDate) { Text(tr("上一步", "Back")) }
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = onConfirm) { Text(tr("确定", "OK")) }
+            }
+        }
+    )
+}
+
+@Composable
+private fun StepperUnit(
+    label: String,
+    value: Int,
+    max: Int,
+    enabled: Boolean,
+    onChange: (Int) -> Unit,
+    onTouch: () -> Unit = {}
+) {
+    var tv by remember { mutableStateOf(TextFieldValue(fmt2(value))) }
+    var fieldFocused by remember { mutableStateOf(false) }
+    // 外部（步进键、滑动）改了值，就把显示跟过去；正打着字时不打扰
+    LaunchedEffect(value) {
+        if (fieldFocused) return@LaunchedEffect
+        val cur = tv.text.toIntOrNull()
+        if (cur != value) tv = TextFieldValue(fmt2(value), TextRange(fmt2(value).length))
+    }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        TextButton(
+            enabled = enabled,
+            onClick = { onChange(stepWrap(value, 1, max)) },
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(4.dp)
+        ) { Text("▲", fontSize = 14.sp, color = if (enabled) BrandBlue else Color.Gray) }
+
+        OutlinedTextField(
+            value = tv,
+            onValueChange = { raw ->
+                val digits = raw.text.filter { it.isDigit() }.takeLast(2)
+                val v = (digits.toIntOrNull() ?: 0).coerceIn(0, max)
+                // 打字时先按原样显示，失焦后再补齐两位，免得边打边跳
+                tv = TextFieldValue(digits, TextRange(digits.length))
+                onChange(v)
+            },
+            enabled = enabled,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            textStyle = androidx.compose.ui.text.TextStyle(
+                fontSize = 22.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            ),
+            placeholder = { Text(if (fieldFocused) fmt2(value) else "", fontSize = 22.sp, color = Color.Gray) },
+            modifier = Modifier
+                .width(86.dp)
+                // 一进焦点就清空并占位显示旧值，打的数字直接顶掉原来的，不会变成「21」后面接「7」
+                .onFocusChanged { st ->
+                    fieldFocused = st.isFocused
+                    if (st.isFocused) {
+                        tv = TextFieldValue("", TextRange(0))
+                        onTouch()
+                    } else if (tv.text.length < 2) {
+                        tv = TextFieldValue(fmt2(value), TextRange(2))
+                    }
+                }
+                .stepDrag(
+                    enabled = enabled,
+                    onUp = { onChange(stepWrap(value, 1, max)) },
+                    onDown = { onChange(stepWrap(value, -1, max)) }
+                )
+        )
+
+        TextButton(
+            enabled = enabled,
+            onClick = { onChange(stepWrap(value, -1, max)) },
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(4.dp)
+        ) { Text("▼", fontSize = 14.sp, color = if (enabled) BrandBlue else Color.Gray) }
+    }
+}
+
+private fun fmt2(v: Int): String = String.format(Locale.US, "%02d", v)
+
+private fun stepWrap(v: Int, delta: Int, max: Int): Int =
+    ((v + delta) % (max + 1) + (max + 1)) % (max + 1)
+
+/**
+ * 在 Initial 阶段先吃掉纵向拖动的手势：数字输入框自己会拿拖动去做光标选择，
+ * 挂在 Main 阶段会被它先消费掉，滑动就失效了。这里先咬住，再交还点击给输入框。
+ */
+private fun Modifier.stepDrag(enabled: Boolean, onUp: () -> Unit, onDown: () -> Unit): Modifier =
+    if (!enabled) this else this.pointerInput(Unit) {
+        awaitPointerEventScope {
+            var acc = 0f
+            var tracking = false
+            while (true) {
+                val ev = awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                val ch = ev.changes.firstOrNull() ?: continue
+                if (ch.pressed && !tracking) { tracking = true; acc = 0f }
+                if (tracking) {
+                    acc += ch.position.y - ch.previousPosition.y
+                    if (acc <= -30f) { ch.consume(); onUp(); acc = 0f }
+                    else if (acc >= 30f) { ch.consume(); onDown(); acc = 0f }
+                }
+                if (!ch.pressed) { tracking = false; acc = 0f }
+            }
+        }
+    }
