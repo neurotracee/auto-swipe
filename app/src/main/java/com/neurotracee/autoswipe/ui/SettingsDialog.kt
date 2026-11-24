@@ -112,7 +112,8 @@ fun SettingsDialog(
                     RootPage(
                         onCheckUpdate = onCheckUpdate,
                         onToggleBall = onToggleBall,
-                        onOpenAbout = { page = 1 }
+                        onOpenAbout = { page = 1 },
+                        onOpenLogs = onOpenLogs
                     )
                 } else {
                     SettingsHeader(
@@ -121,7 +122,7 @@ fun SettingsDialog(
                         onBack = { page = 0 },
                         onDone = onClose
                     )
-                    AboutPage(onOpenLogs = onOpenLogs)
+                    AboutPage()
                 }
             }
         }
@@ -172,7 +173,8 @@ private fun SettingsHeader(
 private fun RootPage(
     onCheckUpdate: () -> Unit,
     onToggleBall: () -> Unit,
-    onOpenAbout: () -> Unit
+    onOpenAbout: () -> Unit,
+    onOpenLogs: () -> Unit
 ) {
     var lang by remember { mutableStateOf(AppPrefs.lang) }
     var theme by remember { mutableStateOf(AppPrefs.themeMode) }
@@ -371,13 +373,49 @@ private fun RootPage(
             )
             Text("›", fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+
+        Spacer(Modifier.height(18.dp))
+        SettingLabel(tr("日志", "Logs"))
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                .clickable { onOpenLogs() }
+                .padding(horizontal = 16.dp, vertical = 15.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    tr("查看日志", "View logs"),
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    tr(
+                        "本次启动与 365 天内的记录；可复制、存 TXT、按范围删除。",
+                        "This launch and the last 365 days — copy, save TXT, or clear a range."
+                    ),
+                    fontSize = 10.5.sp,
+                    lineHeight = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text("›", fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Hint(
+            tr(
+                "日志只写在本机：不联网、不上传，也不申请存储权限。",
+                "Logs stay on this device: no network, no upload, no storage permission."
+            )
+        )
     }
 }
 
 // ---------------------------------------------------------------- 二级页
 
 @Composable
-private fun AboutPage(onOpenLogs: () -> Unit) {
+private fun AboutPage() {
     val ctx = LocalContext.current
     val clipboard = LocalClipboardManager.current
 
@@ -397,48 +435,6 @@ private fun AboutPage(onOpenLogs: () -> Unit) {
             .padding(horizontal = 20.dp)
             .padding(bottom = 28.dp)
     ) {
-        Spacer(Modifier.height(18.dp))
-        DividerLine()
-        Spacer(Modifier.height(14.dp))
-
-        SettingLabel(tr("日志与问题反馈", "Logs & feedback"))
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
-                .clickable { onOpenLogs() }
-                .padding(horizontal = 16.dp, vertical = 15.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    tr("查看日志", "View logs"),
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(Modifier.height(3.dp))
-                Text(
-                    tr(
-                        "本次启动可以直接看；「最近一年」能翻到 365 天内的记录，可复制、存 TXT、按范围删除。",
-                        "This session is right here; “Last 12 months” reaches anything within 365 days — copy, save TXT, or clear a range."
-                    ),
-                    fontSize = 10.5.sp,
-                    lineHeight = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Text("›", fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Hint(
-            tr(
-                "日志只写在本机：不联网、不上传，也不申请存储权限；存 TXT 走系统的「保存到…」。",
-                "Logs stay on this device: no network, no upload, no storage permission; saving a TXT uses the system “Save as…” picker."
-            )
-        )
-
-        Spacer(Modifier.height(18.dp))
-        DividerLine()
-        Spacer(Modifier.height(14.dp))
 
         SettingLabel(tr("这个应用是什么", "What this app is"))
         Text(

@@ -183,6 +183,7 @@ https://gitee.com/bio234/auto-swipe      # mirror / 镜像（国内访问更快�
 | **更新源** | Gitee（建议中国大陆用户）/ GitHub（海外用户）单选，选中项蓝框高亮；连不上自动换另一个并在弹窗里说明 |
 | **版本与更新** | 显示当前版本，右侧「检查更新」当场查一次 |
 | **关于与开源信息 ›** | 进入二级页 |
+| **日志 → 查看日志** | 设置页最后一栏，直接打开日志页 |
 
 二级页写明：版本、这个应用是什么、署名三条、AGPL-3.0-or-later 与第 7 条 (b) 附加条款、
 GitHub / Gitee 两个仓库地址（可点开，打不开浏览器就复制链接）、权限清单、第三方组件清单。
@@ -506,8 +507,9 @@ them are stored locally in `SharedPreferences`.
 | **Update source** | Gitee (mainland China) / GitHub (elsewhere), single choice with a blue highlight; if the chosen source fails, the other is tried and the dialog says so |
 | **Version** | Shows the current version; "Check" runs a check right there |
 | **About & open source ›** | Second level: version, purpose, the three credit lines, AGPL-3.0-or-later with the §7(b) additional terms, both repository links (tap to open, or copy if no browser), permission list, third-party components |
+| **Logs → View logs** | Last block on the settings page, opens the log screen directly |
 
-| **Logs** | Second level → "View logs": this session or the last 365 days, pick a range to the minute, copy, save as TXT, or clear with two confirmations |
+| **Logs** | Settings page, last block → "View logs": this session or the last 365 days, pick a range, copy, save as TXT, or clear with two confirmations |
 
 ### Logs & feedback
 

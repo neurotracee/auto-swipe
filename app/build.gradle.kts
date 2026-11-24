@@ -15,7 +15,7 @@ val keystoreProps = Properties().apply {
 // 小修小改只递增最后一段，功能级改动才动第三段。
 // versionCode 由 versionName 直接算出来，只改这一个字符串即可。
 // 映射：主*1000000 + 次*10000 + 修订*100 + 补丁（例：1.0.0.1 → 1000001）。
-val appVersionName = "1.1.1.1"
+val appVersionName = "1.1.1.4"
 val appVersionCode = appVersionName
     .split(".")
     .map { it.trim().toInt() }

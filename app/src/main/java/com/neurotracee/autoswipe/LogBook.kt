@@ -236,6 +236,10 @@ object LogBook {
         }
     }
 
+    /** 有日志的日期，倒序（最近的在前面），每项是当天 00:00 的毫秒 */
+    fun recentDays(ctx: Context, limit: Int = 6): List<Long> =
+        days(ctx).map { fileDayStart(it) }.filter { it > 0L }.sortedDescending().take(limit)
+
     private fun days(ctx: Context): List<File> =
         dir(ctx).listFiles { f -> f.name.startsWith("log-") && f.name.endsWith(".txt") }
             ?.sortedBy { it.name } ?: emptyList()
