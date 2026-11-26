@@ -32,3 +32,17 @@ Update level: recommended
 - **Time wheels.** Five-row window on white rounded panels; the centre row is bold with a blue frame; minutes stay grey until the hour is moved; tapping a wheel still lets you type.
 - **Entry point.** A new "Logs → View logs" block at the end of the settings page; the About page no longer carries the log section.
 - **Colours.** All taken from the theme — light grey page with white cards in light mode, the dark scheme follows automatically. No hard-coded green.
+
+---
+
+**标签**（tags）：`android`、`jetpack-compose`、`accessibility-service`、`auto-scroll`、`logs`、`offline` · 最低 Android 8.0（minSdk 26）· 版本 `1.1.1.4`
+
+**下载与仓库 · Downloads & repos**
+
+- GitHub 仓库：https://github.com/neurotracee/auto-swipe
+- GitHub 本次 Release：https://github.com/neurotracee/auto-swipe/releases/tag/v1.1.1.4
+- Gitee 镜像仓库：https://gitee.com/bio234/auto-swipe
+- Gitee 本次 Release（国内下载更快）：https://gitee.com/bio234/auto-swipe/releases/tag/v1.1.1.4
+
+> Gitee 用户：主仓库在 GitHub，Issue 与 PR 请优先提到 GitHub；GitHub 访问不畅时再用 Gitee 镜像。
+> GitHub users: the mirror lives on Gitee for mainland China; file issues on GitHub first.
